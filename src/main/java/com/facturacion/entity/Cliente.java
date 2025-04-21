@@ -24,6 +24,7 @@ public class Cliente {
     private String nombre;
     private String direccion;
     private String correo;
+    private String celular;
 
     @Column(columnDefinition = "TINYINT")
     private Byte activo;
