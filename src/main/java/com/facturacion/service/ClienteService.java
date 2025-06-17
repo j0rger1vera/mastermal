@@ -39,4 +39,7 @@ public class ClienteService {
         return this.clienteRepository.verificarSiExiteCliente(ruc_dni);
     }
 
+    public Integer generaNit() {
+        return this.clienteRepository.generaNit();
+    }
 }

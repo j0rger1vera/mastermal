@@ -24,8 +24,12 @@ public class CabFactura {
     private Integer idFcatura;
     @Column(name = "num_factura")
     private Integer numeroFactura;
+    @Column(name = "fecha")
+    private String fecha;
     @Column(name = "ruc_cliente")
     private String rucCliente;
+    @Column(name = "nombre")
+    private String nombre;
 
     @Column(name = "subtotal", columnDefinition = "DECIMAL(10,2)")
     private String subtotal;
@@ -33,6 +37,10 @@ public class CabFactura {
     private String igv;
     @Column(name = "total", columnDefinition = "DECIMAL(10,2)")
     private String total;
+    @Column(name = "abono", columnDefinition = "DECIMAL(10,2)")
+    private String abono;
+    @Column(name = "saldo", columnDefinition = "DECIMAL(10,2)")
+    private String saldo;
 
 
     @JsonManagedReference

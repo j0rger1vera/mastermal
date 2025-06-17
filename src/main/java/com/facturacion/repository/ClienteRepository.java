@@ -14,4 +14,6 @@ public interface ClienteRepository extends CrudRepository<Cliente, Integer> {
     @Query(value = "SELECT count(ruc_dni) as ruc_dni FROM facturacion.cliente where ruc_dni = :ruc_dni", nativeQuery = true)
     public String verificarSiExiteCliente(@Param("ruc_dni") String ruc_dni);
 
+    @Query(value = "SELECT COALESCE(MAX(id_cliente), 0) + 1 as id_cliente FROM facturacion.cliente", nativeQuery = true)
+    public Integer generaNit();
 }

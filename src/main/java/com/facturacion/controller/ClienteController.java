@@ -57,4 +57,8 @@ public class ClienteController {
         }
     }
 
+    @GetMapping("/genera-nit")
+    public ResponseEntity<ResponseMessage> generaNit() {
+        return ResponseEntity.ok(new ResponseMessage(200, this.clienteService.generaNit()));
+    }
 }

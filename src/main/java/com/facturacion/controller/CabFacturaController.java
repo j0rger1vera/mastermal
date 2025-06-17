@@ -1,5 +1,6 @@
 package com.facturacion.controller;
 
+import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.CabFactura;
 import com.facturacion.service.CabFacturaService;
 import com.facturacion.util.ResponseMessage;
@@ -19,11 +20,11 @@ public class CabFacturaController {
         this.cabFacturaService = cabFacturaService;
     }
 
-    @GetMapping
+    /*@GetMapping
     public ResponseEntity<List<CabFactura>> obtenerTodasCabeceras() {
         List<CabFactura> cabeceras = cabFacturaService.obtenerTodas();
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
-    }
+    }*/
 
     @GetMapping("/{id}")
     public ResponseEntity<CabFactura> obtenerFacturaPorId(@PathVariable("id") Integer id) {
@@ -47,6 +48,18 @@ public class CabFacturaController {
     @GetMapping("/genera-factura")
     public ResponseEntity<ResponseMessage> generaFactura() {
         return ResponseEntity.ok(new ResponseMessage(200, this.cabFacturaService.generaFactura()));
+    }
+
+    @GetMapping("/facturacion")
+    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerBalanceGeneral() {
+        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerBalanceGeneral();
+        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerTodasCabeceras() {
+        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerTodasFacturas();
+        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 
 }
