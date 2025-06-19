@@ -1,7 +1,5 @@
 package com.facturacion.dto;
 
-import jakarta.persistence.Column;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,4 +16,5 @@ public class FacturacionGeneralDTO {
         private BigDecimal saldo;
         private BigDecimal abono;
         private BigDecimal total;
+        private String fechaFacturada;
 }
