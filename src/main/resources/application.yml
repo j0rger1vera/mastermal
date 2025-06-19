@@ -6,7 +6,7 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql:aws://awseb-e-mym3zvhhhp-stack-awsebrdsdatabase-thk5l0e9akyp.ce14s8c4afrz.us-east-1.rds.amazonaws.com:3306/facturacion?createDatabaseIfNotExist=true
+    url: jdbc:mysql://factura.ce14s8c4afrz.us-east-1.rds.amazonaws.com:3306/facturacion?createDatabaseIfNotExist=true
     username: root
     password: Mastermal2025
 
