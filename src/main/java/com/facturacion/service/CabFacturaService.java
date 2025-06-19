@@ -1,5 +1,3 @@
-package com.facturacion.service;
-
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.CabFactura;
 import com.facturacion.repository.CabFacturaRepository;
@@ -61,6 +59,7 @@ public class CabFacturaService {
                 nuevaFacturaDto.setSaldo(dto.getSaldo());
                 nuevaFacturaDto.setAbono(dto.getAbono());
                 nuevaFacturaDto.setTotal(dto.getTotal());
+                nuevaFacturaDto.setFechaFacturada(dto.getFechaFacturada());
                 agrupados.put(dto.getNitCliente(), nuevaFacturaDto);
             }
         });
