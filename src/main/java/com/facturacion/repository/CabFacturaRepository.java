@@ -1,4 +1,3 @@
-package com.facturacion.repository;
 
 import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.dto.FacturacionGeneralDTO;
@@ -18,7 +17,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     @Query(value = "SELECT COALESCE(MAX(num_factura), 0) + 1 as num_factura FROM facturacion.cab_factura", nativeQuery = true)
     public Integer generaFactura();
 
-    @Query(value = "SELECT c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.total, c.num_factura " +
+    @Query(value = "SELECT c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.total, c.num_factura, c.fecha " +
             "FROM cab_factura c " +
             "INNER JOIN cliente cl ON c.ruc_cliente = cl.ruc_dni", nativeQuery = true)
     List<Object[]> getBalanceGeneralRaw();
@@ -33,6 +32,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
             dto.setAbono((BigDecimal) record[3]);
             dto.setTotal((BigDecimal) record[4]);
             dto.setNumeroFactura((Integer) record[5]);
+            dto.setFechaFacturada((String) record[6]);
             return dto;
         }).toList();
     }
