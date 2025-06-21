@@ -1,3 +1,5 @@
+package com.facturacion.service;
+
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.CabFactura;
 import com.facturacion.repository.CabFacturaRepository;
