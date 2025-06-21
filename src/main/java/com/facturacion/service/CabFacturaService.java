@@ -61,6 +61,7 @@ public class CabFacturaService {
                 nuevaFacturaDto.setSaldo(dto.getSaldo());
                 nuevaFacturaDto.setAbono(dto.getAbono());
                 nuevaFacturaDto.setTotal(dto.getTotal());
+                nuevaFacturaDto.setFechaFacturada(dto.getFechaFacturada());
                 agrupados.put(dto.getNitCliente(), nuevaFacturaDto);
             }
         });
