@@ -1,4 +1,4 @@
-FROM openjdk:17.0.12-jdk AS builder
+FROM eclipse-temurin:17 AS builder
 
 WORKDIR /app
 
@@ -6,7 +6,7 @@ COPY . .
 
 RUN ./mvnw clean package -DskipTests
 
-FROM openjdk:17.0.12-jre
+FROM eclipse-temurin:17 AS jre-build
 
 WORKDIR /app
 
