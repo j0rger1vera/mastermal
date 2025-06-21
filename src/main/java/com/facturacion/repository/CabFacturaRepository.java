@@ -1,3 +1,4 @@
+package com.facturacion.repository;
 
 import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.dto.FacturacionGeneralDTO;
