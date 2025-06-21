@@ -1,6 +1,7 @@
 FROM eclipse-temurin:17-jdk-focal AS builder
 WORKDIR /app
 COPY . .
+RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
 # Run Stage
