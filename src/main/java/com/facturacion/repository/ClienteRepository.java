@@ -8,6 +8,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ClienteRepository extends CrudRepository<Cliente, Integer> {
 
@@ -16,4 +18,7 @@ public interface ClienteRepository extends CrudRepository<Cliente, Integer> {
 
     @Query(value = "SELECT COALESCE(MAX(id_cliente), 0) + 1 as id_cliente FROM facturacion.cliente", nativeQuery = true)
     public Integer generaNit();
+
+    @Query(value = "SELECT * FROM cliente c ORDER BY c.nombre ASC", nativeQuery = true)
+    List<Cliente> getClientes();
 }
