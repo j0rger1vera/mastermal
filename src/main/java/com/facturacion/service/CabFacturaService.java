@@ -2,6 +2,7 @@ package com.facturacion.service;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.CabFactura;
+import com.facturacion.entity.Cliente;
 import com.facturacion.repository.CabFacturaRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,10 @@ public class CabFacturaService {
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
         return this.cabFacturaRepository.save(cabFactura);
+    }
+
+    public void actualizarFactura(CabFactura cabFactura) {
+        this.cabFacturaRepository.save(cabFactura);
     }
 
     public List<CabFactura> obtenerTodas( ) {
@@ -57,7 +62,7 @@ public class CabFacturaService {
                 // Si no existe, agregar el objeto al mapa
                 FacturacionGeneralDTO nuevaFacturaDto = new FacturacionGeneralDTO();
                 nuevaFacturaDto.setNitCliente(dto.getNitCliente());
-                nuevaFacturaDto.setNombreCliente(dto.getNombreCliente());
+                nuevaFacturaDto.setNombreCliente(dto.getNombreCliente().toLowerCase());
                 nuevaFacturaDto.setSaldo(dto.getSaldo());
                 nuevaFacturaDto.setAbono(dto.getAbono());
                 nuevaFacturaDto.setTotal(dto.getTotal());
