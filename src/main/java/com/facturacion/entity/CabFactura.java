@@ -21,7 +21,7 @@ public class CabFactura {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_factura")
-    private Integer idFcatura;
+    private Integer idFactura;
     @Column(name = "num_factura")
     private Integer numeroFactura;
     @Column(name = "fecha")
@@ -29,7 +29,7 @@ public class CabFactura {
     @Column(name = "ruc_cliente")
     private String rucCliente;
     @Column(name = "nombre")
-    private String nombre;
+    private String detalle;
 
     @Column(name = "subtotal", columnDefinition = "DECIMAL(10,2)")
     private String subtotal;
