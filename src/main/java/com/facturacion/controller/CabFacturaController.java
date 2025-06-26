@@ -2,6 +2,7 @@ package com.facturacion.controller;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.CabFactura;
+import com.facturacion.entity.Cliente;
 import com.facturacion.service.CabFacturaService;
 import com.facturacion.util.ResponseMessage;
 import org.springframework.http.HttpStatus;
@@ -62,4 +63,9 @@ public class CabFacturaController {
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 
+    @PutMapping("/actualizar")
+    public ResponseEntity<Void> actualizarFactura(@RequestBody CabFactura cabFactura) {
+        this.cabFacturaService.actualizarFactura(cabFactura);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

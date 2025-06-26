@@ -15,7 +15,7 @@ public class ClienteService {
     private ClienteRepository clienteRepository;
 
     public List<Cliente> listarClientes() {
-        return (List<Cliente>) this.clienteRepository.findAll();
+        return this.clienteRepository.getClientes();
     }
 
     public Optional<Cliente> obtenerClientePorId(Integer id) {
