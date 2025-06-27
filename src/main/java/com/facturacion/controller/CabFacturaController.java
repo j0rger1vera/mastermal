@@ -21,12 +21,6 @@ public class CabFacturaController {
         this.cabFacturaService = cabFacturaService;
     }
 
-    /*@GetMapping
-    public ResponseEntity<List<CabFactura>> obtenerTodasCabeceras() {
-        List<CabFactura> cabeceras = cabFacturaService.obtenerTodas();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
-    }*/
-
     @GetMapping("/{id}")
     public ResponseEntity<CabFactura> obtenerFacturaPorId(@PathVariable("id") Integer id) {
         return cabFacturaService.obtenerPorId(id)
@@ -67,5 +61,11 @@ public class CabFacturaController {
     public ResponseEntity<Void> actualizarFactura(@RequestBody CabFactura cabFactura) {
         this.cabFacturaService.actualizarFactura(cabFactura);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/cliente/{nit}")
+    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturaPorCliente(@PathVariable("nit") String nitCliente) {
+        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerPorNitCliente(nitCliente);
+        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 }

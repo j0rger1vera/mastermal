@@ -1,10 +1,7 @@
 package com.facturacion.repository;
 
-import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.CabFactura;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -28,14 +25,40 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         return results.stream().map(record -> {
             FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
             dto.setIdFactura((Integer) record[0]);
-            dto.setNitCliente((String) record[1]);
+            dto.setRucCliente((String) record[1]);
                 dto.setNombreCliente((String) record[2].toString().toLowerCase());
             dto.setSaldo((BigDecimal) record[3]);
             dto.setAbono((BigDecimal) record[4]);
             dto.setDetalle((String) record[5]);
             dto.setTotal((BigDecimal) record[6]);
             dto.setNumeroFactura((Integer) record[7]);
-            dto.setFechaFacturada((String) record[8]);
+            dto.setFecha((String) record[8]);
+            return dto;
+        }).toList();
+    }
+
+
+    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha, c.subtotal " +
+        "FROM cab_factura c " +
+        "INNER JOIN cliente cl ON c.ruc_cliente = cl.ruc_dni " +
+        "WHERE c.ruc_cliente = :nitCliente " +
+        "ORDER BY c.num_factura ASC", nativeQuery = true)
+    List<Object[]> getFacturaPorUnClienteQuery(String nitCliente);
+
+    default List<FacturacionGeneralDTO> getFacturaPorUnCliente(String nitCliente) {
+        List<Object[]> results = getFacturaPorUnClienteQuery(nitCliente.toString());
+        return results.stream().map(record -> {
+            FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
+            dto.setIdFactura((Integer) record[0]);
+            dto.setRucCliente((String) record[1]);
+            dto.setNombreCliente((String) record[2].toString().toLowerCase());
+            dto.setSaldo((BigDecimal) record[3]);
+            dto.setAbono((BigDecimal) record[4]);
+            dto.setDetalle((String) record[5]);
+            dto.setTotal((BigDecimal) record[6]);
+            dto.setNumeroFactura((Integer) record[7]);
+            dto.setFecha((String) record[8]);
+            dto.setSubtotal((BigDecimal) record[9]);
             return dto;
         }).toList();
     }

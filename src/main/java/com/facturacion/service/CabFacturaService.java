@@ -2,7 +2,6 @@ package com.facturacion.service;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.CabFactura;
-import com.facturacion.entity.Cliente;
 import com.facturacion.repository.CabFacturaRepository;
 import org.springframework.stereotype.Service;
 
@@ -51,23 +50,23 @@ public class CabFacturaService {
 
         listaFacturacion.forEach(dto -> {
             // Verificar si ya existe un objeto con el mismo nitCliente
-            if (agrupados.containsKey(dto.getNitCliente())) {
+            if (agrupados.containsKey(dto.getRucCliente())) {
                 // Si existe, sumar los valores
-                FacturacionGeneralDTO existente = agrupados.get(dto.getNitCliente());
+                FacturacionGeneralDTO existente = agrupados.get(dto.getRucCliente());
                 existente.setSaldo(existente.getSaldo().add(dto.getSaldo()));
                 existente.setAbono(existente.getAbono().add(dto.getAbono()));
                 existente.setTotal(existente.getTotal().add(dto.getTotal()));
-                agrupados.put(dto.getNitCliente(), existente);
+                agrupados.put(dto.getRucCliente(), existente);
             } else {
                 // Si no existe, agregar el objeto al mapa
                 FacturacionGeneralDTO nuevaFacturaDto = new FacturacionGeneralDTO();
-                nuevaFacturaDto.setNitCliente(dto.getNitCliente());
+                nuevaFacturaDto.setRucCliente(dto.getRucCliente());
                 nuevaFacturaDto.setNombreCliente(dto.getNombreCliente().toLowerCase());
                 nuevaFacturaDto.setSaldo(dto.getSaldo());
                 nuevaFacturaDto.setAbono(dto.getAbono());
                 nuevaFacturaDto.setTotal(dto.getTotal());
-                nuevaFacturaDto.setFechaFacturada(dto.getFechaFacturada());
-                agrupados.put(dto.getNitCliente(), nuevaFacturaDto);
+                nuevaFacturaDto.setFecha(dto.getFecha());
+                agrupados.put(dto.getRucCliente(), nuevaFacturaDto);
             }
         });
 
@@ -79,4 +78,7 @@ public class CabFacturaService {
         return this.cabFacturaRepository.getBalanceGeneral();
     }
 
+    public List<FacturacionGeneralDTO> obtenerPorNitCliente(String nitCliente) {
+        return this.cabFacturaRepository.getFacturaPorUnCliente(nitCliente);
+    }
 }
