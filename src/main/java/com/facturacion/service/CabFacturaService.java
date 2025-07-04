@@ -81,4 +81,9 @@ public class CabFacturaService {
     public List<FacturacionGeneralDTO> obtenerPorNitCliente(String nitCliente) {
         return this.cabFacturaRepository.getFacturaPorUnCliente(nitCliente);
     }
+
+    public List<FacturacionGeneralDTO> obtenerFacturasConSaldos( ) {
+        return this.cabFacturaRepository.getFacturasSaldosPorClientes();
+    }
+
 }

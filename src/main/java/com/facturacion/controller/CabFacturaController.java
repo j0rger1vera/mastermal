@@ -68,4 +68,11 @@ public class CabFacturaController {
         List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerPorNitCliente(nitCliente);
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
+
+    @GetMapping("/saldos")
+    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturasConSaldos() {
+        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerFacturasConSaldos();
+        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+    }
+
 }

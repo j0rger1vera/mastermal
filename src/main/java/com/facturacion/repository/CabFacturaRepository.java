@@ -62,4 +62,53 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
             return dto;
         }).toList();
     }
+
+    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
+        "FROM cab_factura c " +
+        "INNER JOIN cliente cl ON c.ruc_cliente = cl.ruc_dni " +
+        "WHERE c.saldo = 0 " +
+        "ORDER BY c.num_factura DESC", nativeQuery = true)
+    List<Object[]> getSaldos();
+
+    default List<FacturacionGeneralDTO> getFacturasConSaldos() {
+        List<Object[]> results = getSaldos();
+        return results.stream().map(record -> {
+            FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
+            dto.setIdFactura((Integer) record[0]);
+            dto.setRucCliente((String) record[1]);
+            dto.setNombreCliente((String) record[2].toString().toLowerCase());
+            dto.setSaldo((BigDecimal) record[3]);
+            dto.setAbono((BigDecimal) record[4]);
+            dto.setDetalle((String) record[5]);
+            dto.setTotal((BigDecimal) record[6]);
+            dto.setNumeroFactura((Integer) record[7]);
+            dto.setFecha((String) record[8]);
+            return dto;
+        }).toList();
+    }
+
+    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
+        "FROM cab_factura c " +
+        "INNER JOIN cliente cl ON c.ruc_cliente = cl.ruc_dni " +
+        "WHERE c.saldo > 0 " +
+        "ORDER BY c.num_factura DESC", nativeQuery = true)
+    List<Object[]> getSaldosClientes();
+
+    default List<FacturacionGeneralDTO> getFacturasSaldosPorClientes() {
+        List<Object[]> results = getSaldosClientes();
+        return results.stream().map(record -> {
+            FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
+            dto.setIdFactura((Integer) record[0]);
+            dto.setRucCliente((String) record[1]);
+            dto.setNombreCliente((String) record[2].toString().toLowerCase());
+            dto.setSaldo((BigDecimal) record[3]);
+            dto.setAbono((BigDecimal) record[4]);
+            dto.setDetalle((String) record[5]);
+            dto.setTotal((BigDecimal) record[6]);
+            dto.setNumeroFactura((Integer) record[7]);
+            dto.setFecha((String) record[8]);
+            return dto;
+        }).toList();
+    }
+
 }
