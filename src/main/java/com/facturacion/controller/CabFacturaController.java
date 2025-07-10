@@ -40,7 +40,7 @@ public class CabFacturaController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/genera-factura")
+    @GetMapping("/numfactura")
     public ResponseEntity<ResponseMessage> generaFactura() {        
         Integer newNumeroFactura = cabFacturaService.generaFactura();
         return new ResponseEntity(newNumeroFactura, HttpStatus.OK);
