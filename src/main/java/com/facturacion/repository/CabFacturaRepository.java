@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer> {
 
-    @Query(value = "SELECT COALESCE(MAX(num_factura), 0) + 1 as num_factura FROM facturacion.cab_factura", nativeQuery = true)
+    @Query(value = "SELECT COALESCE(MAX(c.num_factura), 0) + 1 as num_factura FROM cab_factura c", nativeQuery = true)
     public Integer generaFactura();
 
     @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
