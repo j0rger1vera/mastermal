@@ -41,8 +41,9 @@ public class CabFacturaController {
     }
 
     @GetMapping("/genera-factura")
-    public ResponseEntity<ResponseMessage> generaFactura() {
-        return ResponseEntity.ok(new ResponseMessage(200, this.cabFacturaService.generaFactura()));
+    public ResponseEntity<ResponseMessage> generaFactura() {        
+        Integer newNumeroFactura = cabFacturaService.generaFactura();
+        return new ResponseEntity(newNumeroFactura, HttpStatus.OK);
     }
 
     @GetMapping("/facturacion")
