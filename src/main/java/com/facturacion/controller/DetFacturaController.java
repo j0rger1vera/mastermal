@@ -22,9 +22,17 @@ public class DetFacturaController {
 
     @PostMapping("/guardar")
     public ResponseEntity<ResponseMessage> guardarDetallesFactura(@RequestBody List<DetFacturaDTO> detallesFacturaDTO) {
-        detFacturaService.insertarFacturas(detallesFacturaDTO);
+        detallesFacturaDTO.get(0).setValTotalProd( String.valueOf(detallesFacturaDTO.get(0).getCantidad() *
+            Integer.valueOf(detallesFacturaDTO.get(0).getValUnitarioProd())) );
+        detFacturaService.insertarProducto(detallesFacturaDTO);
         return ResponseEntity.ok(new ResponseMessage(200, "Detalles de factura guardados exitosamente"));
     }
 
+
+    @PutMapping("/actualizardeta")
+    public ResponseEntity<Void> actualizarDetalDeFactura(@RequestBody List<DetFacturaDTO> detallesFacturaDTO) {
+        this.detFacturaService.actualizarDetalles(detallesFacturaDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 }

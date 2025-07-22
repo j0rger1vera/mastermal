@@ -1,6 +1,7 @@
 package com.facturacion.repository;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
+import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.entity.CabFactura;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -12,7 +13,7 @@ import java.util.List;
 @Repository
 public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer> {
 
-    @Query(value = "SELECT COALESCE(MAX(num_factura), 0) + 1 as num_factura FROM facturacion.cab_factura", nativeQuery = true)
+    @Query(value = "SELECT COALESCE(MAX(c.num_factura), 0) + 1 as num_factura FROM cab_factura c", nativeQuery = true)
     public Integer generaFactura();
 
     @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
@@ -111,4 +112,25 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         }).toList();
     }
 
+    @Query(value = "SELECT d.id, d.cantidad, d.codigo_producto, d.pk_cab_factura, d.valor_unitario, d.valor_total, p.nombre " +
+        "FROM det_factura d " +
+        "INNER JOIN producto p ON p.id_producto = d.codigo_producto " +
+        "WHERE d.pk_cab_factura = :idFactura " +
+        "ORDER BY d.id ASC", nativeQuery = true)
+    List<Object[]> getProdsxIdFacturaQuery(Integer idFactura);
+
+    default List<DetFacturaDTO> getProductosPorIdFactura(String idFactura) {
+        List<Object[]> results = getProdsxIdFacturaQuery(Integer.parseInt(idFactura));
+        return results.stream().map(record -> {
+            DetFacturaDTO dto = new DetFacturaDTO();
+            dto.setIdProducto((Integer) record[0]);
+            dto.setCantidad((Integer) record[1]);
+            dto.setCodigoProducto((Integer) record[2]);
+            dto.setPkCabFactura((Integer) record[3]);
+            dto.setValUnitarioProd((String) record[4]);
+            dto.setValTotalProd((String) record[5]);
+            dto.setNombreProducto((String) record[6]);
+            return dto;
+        }).toList();
+    }
 }

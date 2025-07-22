@@ -12,27 +12,41 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("checkstyle:Indentation")
 @Service
 public class DetFacturaService {
 
     private static  final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DetFacturaService.class);
     private final DetFacturaRepository detFacturaRepository;
 
-    private final CabFacturaRepository cabFacturaRepository;
-
-    public DetFacturaService(DetFacturaRepository detFacturaRepository, CabFacturaRepository cabFacturaRepository) {
+    public DetFacturaService(DetFacturaRepository detFacturaRepository) {
         this.detFacturaRepository = detFacturaRepository;
-        this.cabFacturaRepository = cabFacturaRepository;
     }
 
     @Transactional
-    public void insertarFacturas(List<DetFacturaDTO> detFacturaDTOs) {
+    public void insertarProducto(List<DetFacturaDTO> detFacturaDTOs) {
         for (DetFacturaDTO detFacturaDTO : detFacturaDTOs) {
             this.detFacturaRepository.insertarFactura(  detFacturaDTO.getCodigoProducto(),
                                                         detFacturaDTO.getCantidad(),
-                                                        detFacturaDTO.getPkCabFactura()
+                                                        detFacturaDTO.getPkCabFactura(),
+                                                        detFacturaDTO.getValUnitarioProd(),
+                                                        detFacturaDTO.getValTotalProd()
                                                       );
         }
     }
+
+  @SuppressWarnings({"checkstyle:MissingJavadocMethod", "checkstyle:AbbreviationAsWordInName"})
+  public void actualizarDetalles(List<DetFacturaDTO> detFacturaDTOs) {
+    for (DetFacturaDTO detFacturaDto : detFacturaDTOs) {
+        DetFactura detalle = DetFactura.builder()
+            .codigoProducto(detFacturaDto.getCodigoProducto())
+            .cantidad(detFacturaDto.getCantidad())
+            .valUnitarioProducto(detFacturaDto.getValUnitarioProd())
+            .valTotalProducto(detFacturaDto.getValTotalProd())
+            .build();
+        this.detFacturaRepository.save(detalle);
+    }
+  }
+
 
 }

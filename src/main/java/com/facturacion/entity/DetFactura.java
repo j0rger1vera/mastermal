@@ -3,6 +3,7 @@ package com.facturacion.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class DetFactura {
@@ -20,7 +22,14 @@ public class DetFactura {
     @Column(name = "codigo_producto")
     private Integer codigoProducto;
 
+    @Column(name = "cantidad")
     private Integer cantidad;
+
+    @Column(name = "valor_unitario", columnDefinition = "DECIMAL(10,2)")
+    private String valUnitarioProducto;
+
+    @Column(name = "valor_total", columnDefinition = "DECIMAL(10,2)")
+    private String valTotalProducto;
 
     @JsonBackReference
     @ManyToOne

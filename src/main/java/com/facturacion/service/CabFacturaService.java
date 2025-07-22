@@ -1,7 +1,9 @@
 package com.facturacion.service;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
+import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.entity.CabFactura;
+import com.facturacion.entity.DetFactura;
 import com.facturacion.repository.CabFacturaRepository;
 import org.springframework.stereotype.Service;
 
@@ -86,4 +88,7 @@ public class CabFacturaService {
         return this.cabFacturaRepository.getFacturasSaldosPorClientes();
     }
 
+    public List<DetFacturaDTO> obtenerProductosPorFactura(String idFactura) {
+        return this.cabFacturaRepository.getProductosPorIdFactura(idFactura);
+    }
 }

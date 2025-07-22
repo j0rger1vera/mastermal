@@ -1,6 +1,7 @@
 package com.facturacion.controller;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
+import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.entity.CabFactura;
 import com.facturacion.entity.Cliente;
 import com.facturacion.service.CabFacturaService;
@@ -40,9 +41,10 @@ public class CabFacturaController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/genera-factura")
+    @GetMapping("/numfactura")
     public ResponseEntity<ResponseMessage> generaFactura() {
-        return ResponseEntity.ok(new ResponseMessage(200, this.cabFacturaService.generaFactura()));
+        Integer newNumeroFactura = cabFacturaService.generaFactura();
+        return new ResponseEntity(newNumeroFactura, HttpStatus.OK);
     }
 
     @GetMapping("/facturacion")
@@ -73,6 +75,12 @@ public class CabFacturaController {
     public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturasConSaldos() {
         List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerFacturasConSaldos();
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+    }
+
+    @GetMapping("/productosxfactura/{idFactura}")
+    public ResponseEntity<List<DetFacturaDTO>> obtenerProductosPorFactura(@PathVariable("idFactura") String idFactura) {
+        List<DetFacturaDTO> productos = cabFacturaService.obtenerProductosPorFactura(idFactura);
+        return new ResponseEntity<>(productos, HttpStatus.OK);
     }
 
 }
