@@ -88,39 +88,9 @@ public class CabFacturaService {
         return this.cabFacturaRepository.getFacturasSaldosPorClientes();
     }
 
-    public List<DetFacturaDTO> obtenerProductosPorFactura(String idFactura) {
-        return this.cabFacturaRepository.getProductosPorIdFactura(idFactura);
-    }
-
     public List<FacturacionGeneralDTO> consultarSaldosPorCobrar( ) {
         List<FacturacionGeneralDTO> listaFacturacion = this.cabFacturaRepository.getSaldosPorCobrar();
-
-        Map<String, FacturacionGeneralDTO> agrupados = new HashMap<>();
-
-        listaFacturacion.forEach(dto -> {
-            // Verificar si ya existe un objeto con el mismo nitCliente
-            if (agrupados.containsKey(dto.getRucCliente())) {
-                // Si existe, sumar los valores
-                FacturacionGeneralDTO existente = agrupados.get(dto.getRucCliente());
-                existente.setSaldo(existente.getSaldo().add(dto.getSaldo()));
-                existente.setAbono(existente.getAbono().add(dto.getAbono()));
-                existente.setTotal(existente.getTotal().add(dto.getTotal()));
-                agrupados.put(dto.getRucCliente(), existente);
-            } else {
-                // Si no existe, agregar el objeto al mapa
-                FacturacionGeneralDTO nuevaFacturaDto = new FacturacionGeneralDTO();
-                nuevaFacturaDto.setRucCliente(dto.getRucCliente());
-                nuevaFacturaDto.setNombreCliente(dto.getNombreCliente().toLowerCase());
-                nuevaFacturaDto.setSaldo(dto.getSaldo());
-                nuevaFacturaDto.setAbono(dto.getAbono());
-                nuevaFacturaDto.setTotal(dto.getTotal());
-                nuevaFacturaDto.setFecha(dto.getFecha());
-                agrupados.put(dto.getRucCliente(), nuevaFacturaDto);
-            }
-        });
-
-        // Convertir el mapa a una lista
-        return new ArrayList<>(agrupados.values());
+        return listaFacturacion;
     }
 
 }

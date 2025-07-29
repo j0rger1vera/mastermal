@@ -112,33 +112,12 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         }).toList();
     }
 
-    @Query(value = "SELECT d.id, d.cantidad, d.codigo_producto, d.pk_cab_factura, d.valor_unitario, d.valor_total, p.nombre " +
-        "FROM det_factura d " +
-        "INNER JOIN producto p ON p.id_producto = d.codigo_producto " +
-        "WHERE d.pk_cab_factura = :idFactura " +
-        "ORDER BY d.id ASC", nativeQuery = true)
-    List<Object[]> getProdsxIdFacturaQuery(Integer idFactura);
-
-    default List<DetFacturaDTO> getProductosPorIdFactura(String idFactura) {
-        List<Object[]> results = getProdsxIdFacturaQuery(Integer.parseInt(idFactura));
-        return results.stream().map(record -> {
-            DetFacturaDTO dto = new DetFacturaDTO();
-            dto.setIdProducto((Integer) record[0]);
-            dto.setCantidad((Integer) record[1]);
-            dto.setCodigoProducto((Integer) record[2]);
-            dto.setPkCabFactura((Integer) record[3]);
-            dto.setValUnitarioProd((String) record[4]);
-            dto.setValTotalProd((String) record[5]);
-            dto.setNombreProducto((String) record[6]);
-            return dto;
-        }).toList();
-    }
-
-    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
+    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total), c.num_factura, c.fecha " +
         "FROM cab_factura c " +
         "INNER JOIN cliente cl ON c.ruc_cliente = cl.ruc_dni " +
-        "AND c.saldo > 0 " +
-        "ORDER BY c.num_factura DESC", nativeQuery = true)
+        "WHERE c.saldo > 0 " +
+        "GROUP BY c.ruc_cliente, cl.nombre " +
+        "ORDER BY cl.nombre asc", nativeQuery = true)
     List<Object[]> getSaldosPorCobrarQuery();
 
     default List<FacturacionGeneralDTO> getSaldosPorCobrar() {
@@ -150,10 +129,9 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
             dto.setNombreCliente((String) record[2].toString().toLowerCase());
             dto.setSaldo((BigDecimal) record[3]);
             dto.setAbono((BigDecimal) record[4]);
-            dto.setDetalle((String) record[5]);
-            dto.setTotal((BigDecimal) record[6]);
-            dto.setNumeroFactura((Integer) record[7]);
-            dto.setFecha((String) record[8]);
+            dto.setTotal((BigDecimal) record[5]);
+            dto.setNumeroFactura((Integer) record[6]);
+            dto.setFecha((String) record[7]);
             return dto;
         }).toList();
     }

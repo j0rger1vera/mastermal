@@ -77,12 +77,6 @@ public class CabFacturaController {
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 
-    @GetMapping("/productosxfactura/{idFactura}")
-    public ResponseEntity<List<DetFacturaDTO>> obtenerProductosPorFactura(@PathVariable("idFactura") String idFactura) {
-        List<DetFacturaDTO> productos = cabFacturaService.obtenerProductosPorFactura(idFactura);
-        return new ResponseEntity<>(productos, HttpStatus.OK);
-    }
-
     @GetMapping("/porcobrar")
     public ResponseEntity<List<FacturacionGeneralDTO>> saldosPorCobrar() {
         List<FacturacionGeneralDTO> cabeceras = cabFacturaService.consultarSaldosPorCobrar();
