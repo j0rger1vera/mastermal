@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Setter
@@ -26,10 +28,10 @@ public class DetFactura {
     private Integer cantidad;
 
     @Column(name = "valor_unitario", columnDefinition = "DECIMAL(10,2)")
-    private String valUnitarioProducto;
+    private BigDecimal valUnitarioProducto;
 
     @Column(name = "valor_total", columnDefinition = "DECIMAL(10,2)")
-    private String valTotalProducto;
+    private BigDecimal valTotalProducto;
 
     @JsonBackReference
     @ManyToOne

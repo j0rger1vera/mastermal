@@ -1,10 +1,11 @@
 package com.facturacion.dto;
 
-import com.facturacion.entity.CabFactura;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -16,7 +17,7 @@ public class DetFacturaDTO {
     private Integer codigoProducto;
     private Integer cantidad;
     private Integer pkCabFactura;
-    private String valUnitarioProd;
-    private String valTotalProd;
+    private BigDecimal valUnitarioProd;
+    private BigDecimal valTotalProd;
     private String nombreProducto;
 }

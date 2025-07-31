@@ -48,5 +48,8 @@ public class DetFacturaService {
     }
   }
 
+  public List<DetFacturaDTO> obtenerProductosPorFactura(String idFactura) {
+    return this.detFacturaRepository.getProductosPorIdFactura(idFactura);
+  }
 
 }
