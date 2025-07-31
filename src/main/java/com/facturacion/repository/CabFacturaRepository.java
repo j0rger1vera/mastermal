@@ -112,11 +112,11 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         }).toList();
     }
 
-    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total), c.num_factura, c.fecha " +
-        "FROM cab_factura c " +
-        "INNER JOIN cliente cl ON c.ruc_cliente = cl.ruc_dni " +
+    @Query(value = "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
+        "FROM facturacion.cliente cl " +
+        "INNER JOIN facturacion.cab_factura c ON c.ruc_cliente = cl.ruc_dni " +
         "WHERE c.saldo > 0 " +
-        "GROUP BY c.ruc_cliente, cl.nombre " +
+        "GROUP BY cl.nombre " +
         "ORDER BY cl.nombre asc", nativeQuery = true)
     List<Object[]> getSaldosPorCobrarQuery();
 
@@ -124,14 +124,10 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         List<Object[]> results = getSaldosPorCobrarQuery();
         return results.stream().map(record -> {
             FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
-            dto.setIdFactura((Integer) record[0]);
-            dto.setRucCliente((String) record[1]);
-            dto.setNombreCliente((String) record[2].toString().toLowerCase());
-            dto.setSaldo((BigDecimal) record[3]);
-            dto.setAbono((BigDecimal) record[4]);
-            dto.setTotal((BigDecimal) record[5]);
-            dto.setNumeroFactura((Integer) record[6]);
-            dto.setFecha((String) record[7]);
+            dto.setNombreCliente((String) record[0]);
+            dto.setSaldo((BigDecimal) record[1]);
+            dto.setAbono((BigDecimal) record[2]);
+            dto.setTotal((BigDecimal) record[3]);
             return dto;
         }).toList();
     }
