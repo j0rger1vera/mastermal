@@ -90,7 +90,7 @@ public class CabFacturaService {
 
     public List<FacturacionGeneralDTO> consultarSaldosPorCobrar( ) {
         List<FacturacionGeneralDTO> listaFacturacion = this.cabFacturaRepository.getSaldosPorCobrar();
-        return listaFacturacion;
+            return listaFacturacion;
     }
 
 }
