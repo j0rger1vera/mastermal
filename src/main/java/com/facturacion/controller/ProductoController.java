@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,5 +67,9 @@ public class ProductoController {
         }
     }
 
+    @GetMapping("select-list")
+    public List<Producto> listarDesplegable() {
+      return this.productoService.listarProducto();
+    }
 
 }

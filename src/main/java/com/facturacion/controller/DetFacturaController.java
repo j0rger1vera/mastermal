@@ -32,8 +32,8 @@ public class DetFacturaController {
   }
 
   @SuppressWarnings("checkstyle:MissingJavadocMethod")
-  @PutMapping("/actualizardeta")
-    public ResponseEntity<Void> actualizarDetalDeFactura(@RequestBody List<DetFacturaDTO> detallesFacturaDto) {
+  @PutMapping("/actualizar")
+    public ResponseEntity<Void> actualizarDetalDeFactura(@RequestBody DetFacturaDTO detallesFacturaDto) {
         this.detFacturaService.actualizarDetalles(detallesFacturaDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }

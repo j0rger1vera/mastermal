@@ -36,16 +36,23 @@ public class DetFacturaService {
     }
 
   @SuppressWarnings({"checkstyle:MissingJavadocMethod", "checkstyle:AbbreviationAsWordInName"})
-  public void actualizarDetalles(List<DetFacturaDTO> detFacturaDTOs) {
-    for (DetFacturaDTO detFacturaDto : detFacturaDTOs) {
+  public void actualizarDetalles(DetFacturaDTO detFacturaDTOs) {
+    try {
+        CabFactura factura = new CabFactura();
+        factura.setIdFactura(detFacturaDTOs.getPkCabFactura());
         DetFactura detalle = DetFactura.builder()
-            .codigoProducto(detFacturaDto.getCodigoProducto())
-            .cantidad(detFacturaDto.getCantidad())
-            .valUnitarioProducto(detFacturaDto.getValUnitarioProd())
-            .valTotalProducto(detFacturaDto.getValTotalProd())
+            .id(detFacturaDTOs.getIdProducto())
+            .codigoProducto(detFacturaDTOs.getCodigoProducto())
+            .cantidad(detFacturaDTOs.getCantidad())
+            .pkCabFactura(factura)
+            .valUnitarioProducto(detFacturaDTOs.getValUnitarioProd())
+            .valTotalProducto(detFacturaDTOs.getValTotalProd())
             .build();
         this.detFacturaRepository.save(detalle);
+    } catch (Exception e) {
+        throw new RuntimeException(e);
     }
+
   }
 
   public List<DetFacturaDTO> obtenerProductosPorFactura(String idFactura) {
