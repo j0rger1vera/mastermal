@@ -2,6 +2,8 @@ package com.facturacion.controller;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.dto.DetFacturaDTO;
+import com.facturacion.dto.HistorialAbonosDTO;
+import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
 import com.facturacion.entity.Cliente;
 import com.facturacion.service.CabFacturaService;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -80,6 +83,19 @@ public class CabFacturaController {
     @GetMapping("/porcobrar")
     public ResponseEntity<List<FacturacionGeneralDTO>> saldosPorCobrar() {
         List<FacturacionGeneralDTO> cabeceras = cabFacturaService.consultarSaldosPorCobrar();
+        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+    }
+
+    @PostMapping("/registrar-abono")
+    public ResponseEntity<Abono> registrarAbono(@RequestBody Abono abono) {
+        abono.setFechaAbono(LocalDate.now());
+        Abono abonoRegistrado = cabFacturaService.registrarAbono(abono);
+        return new ResponseEntity<>(abonoRegistrado, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/historial-abonos")
+    public ResponseEntity<List<HistorialAbonosDTO>> obtenerHistoricoAbonos() {
+        List<HistorialAbonosDTO> cabeceras = cabFacturaService.obtenerHistorialAbonos();
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 }

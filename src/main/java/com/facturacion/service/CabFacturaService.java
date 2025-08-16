@@ -2,8 +2,12 @@ package com.facturacion.service;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.dto.DetFacturaDTO;
+import com.facturacion.dto.HistorialAbonosDTO;
+import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
+import com.facturacion.entity.Cliente;
 import com.facturacion.entity.DetFactura;
+import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +17,11 @@ import java.util.*;
 public class CabFacturaService {
 
     private final CabFacturaRepository cabFacturaRepository;
+    private final AbonoRepository abonoRepository;
 
-    public CabFacturaService(CabFacturaRepository cabFacturaRepository) {
+    public CabFacturaService(CabFacturaRepository cabFacturaRepository, AbonoRepository abonoRepository) {
         this.cabFacturaRepository = cabFacturaRepository;
+        this.abonoRepository = abonoRepository;
     }
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
@@ -93,4 +99,11 @@ public class CabFacturaService {
             return listaFacturacion;
     }
 
+    public Abono registrarAbono(Abono abono) {
+        return this.abonoRepository.save(abono);
+    }
+
+    public List<HistorialAbonosDTO> obtenerHistorialAbonos( ) {
+        return this.abonoRepository.getAbonos();
+    }
 }
