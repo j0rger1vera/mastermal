@@ -11,6 +11,7 @@ import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -99,11 +100,31 @@ public class CabFacturaService {
             return listaFacturacion;
     }
 
+    public void abonarAFactura(CabFactura cabFactura) {
+        if (Integer.parseInt(cabFactura.getValAbonoIngresado())>0) {
+            Abono logAbono = traducirFacturaToAbono(cabFactura);
+            this.cabFacturaRepository.save(cabFactura);
+            registrarAbono(logAbono);
+        }
+    }
+
     public Abono registrarAbono(Abono abono) {
         return this.abonoRepository.save(abono);
     }
 
     public List<HistorialAbonosDTO> obtenerHistorialAbonos( ) {
         return this.abonoRepository.getAbonos();
+    }
+
+    private Abono traducirFacturaToAbono(CabFactura cabFactura){
+        Abono abono = Abono.builder()
+            .valorAbono(cabFactura.getValAbonoIngresado())
+            .valAnterior(cabFactura.getValAbonoAnterior())
+            .totalFacturaOriginal(cabFactura.getTotal())
+            .pkCabFactura(cabFactura.getIdFactura())
+            .fechaAbono(LocalDate.now())
+            .build();
+
+        return abono;
     }
 }

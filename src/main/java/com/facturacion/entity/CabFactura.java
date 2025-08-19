@@ -49,5 +49,7 @@ public class CabFactura {
     @OneToMany(mappedBy = "pkCabFactura", cascade = CascadeType.ALL)
     private List<DetFactura> detFactura;
 
+    private String valAbonoIngresado;
+    private String valAbonoAnterior;
 
 }
