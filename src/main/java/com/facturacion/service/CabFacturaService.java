@@ -62,7 +62,7 @@ public class CabFacturaService {
             if (agrupados.containsKey(dto.getRucCliente())) {
                 // Si existe, sumar los valores
                 FacturacionGeneralDTO existente = agrupados.get(dto.getRucCliente());
-                existente.setSaldo(existente.getSaldo().add(dto.getSaldo()));
+                existente.setSaldo(existente.getSaldo().add(dto.getSaldo()));//controlar nulos
                 existente.setAbono(existente.getAbono().add(dto.getAbono()));
                 existente.setTotal(existente.getTotal().add(dto.getTotal()));
                 agrupados.put(dto.getRucCliente(), existente);
