@@ -1,9 +1,11 @@
 package com.facturacion.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import java.time.LocalDate;
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
+@AllArgsConstructor
 public class Cliente {
 
     @Id

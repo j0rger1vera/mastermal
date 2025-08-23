@@ -1,10 +1,12 @@
 package com.facturacion.service;
 
+import com.facturacion.entity.Auditoria;
 import com.facturacion.entity.Cliente;
 import com.facturacion.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +15,8 @@ public class ClienteService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    private AuditarService auditarService;
 
     public List<Cliente> listarClientes() {
         return this.clienteRepository.getClientes();
@@ -23,6 +27,14 @@ public class ClienteService {
     }
 
     public Cliente crearCliente(Cliente cliente) {
+        Auditoria registro = Auditoria.builder()
+            .funcionalidad("Clientes")
+            .operacion("Crear")
+            .fecha(LocalDate.now())
+            .campo("nuevo cliente")
+            .valor(Cliente.class.toString())
+            .build();
+        Auditoria auditoria = this.auditarService.registrarMovimiento(registro);
         return this.clienteRepository.save(cliente);
     }
 
