@@ -13,6 +13,6 @@ import java.util.List;
 public interface AuditarRepository extends CrudRepository<Auditoria, Integer> {
 
 
-    @Query(value = "SELECT * FROM auditoria a ORDER BY a.fecha ASC", nativeQuery = true)
+    @Query(value = "SELECT * FROM auditoria a ORDER BY a.fecha DESC", nativeQuery = true)
     List<Auditoria> getMovimientos();
 }
