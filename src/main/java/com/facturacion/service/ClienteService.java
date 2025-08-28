@@ -7,11 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ClienteService {
+    public ClienteService(ClienteRepository clienteRepository, AuditarService auditarService) {
+        this.clienteRepository = clienteRepository;
+        this.auditarService = auditarService;
+    }
 
     @Autowired
     private ClienteRepository clienteRepository;
@@ -27,20 +32,14 @@ public class ClienteService {
     }
 
     public Cliente crearCliente(Cliente cliente) {
-        Auditoria registro = Auditoria.builder()
-            .funcionalidad("Clientes")
-            .operacion("Crear")
-            .fecha(LocalDate.now())
-            .campo("nuevo cliente")
-            .valor(Cliente.class.toString())
-            .build();
-        Auditoria auditoria = this.auditarService.registrarMovimiento(registro);
-        return this.clienteRepository.save(cliente);
+        Cliente clienteGuardado = this.clienteRepository.save(cliente);
+        auditarService.registrarMovimiento(clienteGuardado, "Cliente", "Crear cliente");
+        return clienteGuardado;
     }
 
     public void actualizarCliente(Cliente cliente) {
-
         this.clienteRepository.save(cliente);
+        auditarService.registrarMovimiento(cliente, "Cliente", "Modificar cliente");
     }
 
     public void eliminarCliente(Integer id) {

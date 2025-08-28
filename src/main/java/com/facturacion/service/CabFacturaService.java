@@ -9,28 +9,38 @@ import com.facturacion.entity.Cliente;
 import com.facturacion.entity.DetFactura;
 import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@AllArgsConstructor
 public class CabFacturaService {
 
     private final CabFacturaRepository cabFacturaRepository;
     private final AbonoRepository abonoRepository;
-
-    public CabFacturaService(CabFacturaRepository cabFacturaRepository, AbonoRepository abonoRepository) {
-        this.cabFacturaRepository = cabFacturaRepository;
-        this.abonoRepository = abonoRepository;
-    }
+    private final AuditarService auditarService;
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
-        return this.cabFacturaRepository.save(cabFactura);
+        cabFactura.setFecha((((LocalDateTime.now()).toString()).replace('T', ' ')).substring(0, 19));
+        cabFactura.setTotal(StringUtils.isEmpty(cabFactura.getTotal()) || Objects.isNull(cabFactura.getTotal()) ? "0.00" : cabFactura.getTotal() );
+        cabFactura.setSaldo(StringUtils.isEmpty(cabFactura.getSaldo()) || Objects.isNull(cabFactura.getSaldo()) ? "0.00" : cabFactura.getSaldo() );
+        cabFactura.setAbono(StringUtils.isEmpty(cabFactura.getAbono()) || Objects.isNull(cabFactura.getAbono()) ? "0.00" : cabFactura.getAbono() );
+        cabFactura.setDetalle(StringUtils.isEmpty(cabFactura.getDetalle()) || Objects.isNull(cabFactura.getDetalle()) ? "" : cabFactura.getDetalle() );
+        cabFactura.setValAbonoAnterior(StringUtils.isEmpty(cabFactura.getValAbonoAnterior()) || Objects.isNull(cabFactura.getValAbonoAnterior()) ? "0.00" : cabFactura.getValAbonoAnterior() );
+        cabFactura.setValAbonoIngresado(StringUtils.isEmpty(cabFactura.getValAbonoIngresado()) || Objects.isNull(cabFactura.getValAbonoIngresado()) ? "0.00" : cabFactura.getValAbonoIngresado() );
+        CabFactura facturaGuardada = this.cabFacturaRepository.save(cabFactura);
+        auditarService.registrarMovimiento(facturaGuardada, "Factura", "Crear factura");
+        return facturaGuardada;
     }
 
     public void actualizarFactura(CabFactura cabFactura) {
         this.cabFacturaRepository.save(cabFactura);
+        auditarService.registrarMovimiento(cabFactura, "Factura", "Modificar factura");
     }
 
     public List<CabFactura> obtenerTodas( ) {
@@ -109,7 +119,9 @@ public class CabFacturaService {
     }
 
     public Abono registrarAbono(Abono abono) {
-        return this.abonoRepository.save(abono);
+        Abono abonoCreado = this.abonoRepository.save(abono);
+        auditarService.registrarMovimiento(abonoCreado, "Abonos", "Agregar abono");
+        return abonoCreado;
     }
 
     public List<HistorialAbonosDTO> obtenerHistorialAbonos( ) {

@@ -17,6 +17,11 @@ public class ProductoService {
 
     @Autowired
     private ProductoRepository productoRepository;
+    private final AuditarService auditarService;
+
+    public ProductoService(AuditarService auditarService) {
+        this.auditarService = auditarService;
+    }
 
     public List<Producto> listarProducto() {
         return (List<Producto>) this.productoRepository.findAll();
@@ -27,11 +32,14 @@ public class ProductoService {
     }
 
     public Producto crearProducto(Producto producto) {
-        return this.productoRepository.save(producto);
+        Producto plancha = this.productoRepository.save(producto);
+        auditarService.registrarMovimiento(plancha, "Planchas", "Registrar plancha");
+        return plancha;
     }
 
     public void actualizarProducto(Producto producto) {
         this.productoRepository.save(producto);
+        auditarService.registrarMovimiento(producto, "Planchas", "Modificar plancha");
     }
 
     public void eliminarProducto(Integer id) {

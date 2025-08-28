@@ -10,8 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -27,7 +26,7 @@ public class Auditoria {
     private Integer id;
     private String funcionalidad;
     private String operacion;
-    private LocalDate fecha;
+    private LocalDateTime fecha;
     private String campo;
     private String valor;
 

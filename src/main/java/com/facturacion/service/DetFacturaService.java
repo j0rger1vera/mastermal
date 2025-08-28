@@ -18,9 +18,11 @@ public class DetFacturaService {
 
     private static  final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DetFacturaService.class);
     private final DetFacturaRepository detFacturaRepository;
+    private final AuditarService auditarService;
 
-    public DetFacturaService(DetFacturaRepository detFacturaRepository) {
+    public DetFacturaService(DetFacturaRepository detFacturaRepository, AuditarService auditarService) {
         this.detFacturaRepository = detFacturaRepository;
+        this.auditarService = auditarService;
     }
 
     @Transactional
@@ -32,6 +34,7 @@ public class DetFacturaService {
                                                         detFacturaDTO.getValUnitarioProd(),
                                                         detFacturaDTO.getValTotalProd()
                                                       );
+            auditarService.registrarMovimiento(detFacturaDTO, "Planchas", "Agregar plancha");
         }
     }
 
@@ -49,6 +52,8 @@ public class DetFacturaService {
             .valTotalProducto(detFacturaDTOs.getValTotalProd())
             .build();
         this.detFacturaRepository.save(detalle);
+        auditarService.registrarMovimiento(detFacturaDTOs, "Planchas", "Modificar plancha");
+        System.out.println("Se actualizón plancha y se registró auditoria");
     } catch (Exception e) {
         throw new RuntimeException(e);
     }
