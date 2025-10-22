@@ -43,4 +43,10 @@ public class DetFacturaController {
     List<DetFacturaDTO> productos = detFacturaService.obtenerProductosPorFactura(idFactura);
     return new ResponseEntity<>(productos, HttpStatus.OK);
   }
+
+    @GetMapping("/eliminar/{idFactura}")
+    public ResponseEntity<ResponseMessage> obtenerProductosPorFactura(@RequestBody DetFacturaDTO detallesFacturaDto) {
+        detFacturaService.eliminarPlaancha(detallesFacturaDto);
+        return ResponseEntity.ok(new ResponseMessage(200, "Plancha eliminada de la factura exitosamente"));
+    }
 }

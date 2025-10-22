@@ -1,18 +1,16 @@
 package com.facturacion.controller;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
-import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.dto.HistorialAbonosDTO;
 import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
-import com.facturacion.entity.Cliente;
+import com.facturacion.service.AbonoService;
 import com.facturacion.service.CabFacturaService;
 import com.facturacion.util.ResponseMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -20,9 +18,11 @@ import java.util.List;
 public class CabFacturaController {
 
     private final CabFacturaService cabFacturaService;
+    private final AbonoService abonoService;
 
-    public CabFacturaController(CabFacturaService cabFacturaService) {
+    public CabFacturaController(CabFacturaService cabFacturaService, AbonoService abonoService) {
         this.cabFacturaService = cabFacturaService;
+        this.abonoService = abonoService;
     }
 
     @GetMapping("/{id}")
@@ -52,7 +52,7 @@ public class CabFacturaController {
 
     @GetMapping("/facturacion")
     public ResponseEntity<List<FacturacionGeneralDTO>> obtenerBalanceGeneral() {
-        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerBalanceGeneral();
+        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerSaldosPorCliente();
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 
@@ -88,19 +88,19 @@ public class CabFacturaController {
 
     @PutMapping("/abonar")
     public ResponseEntity<Void> abonarAFactura(@RequestBody CabFactura cabFactura) {
-        this.cabFacturaService.abonarAFactura(cabFactura);
+        this.abonoService.abonarAFactura(cabFactura);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/registrar-abono")
     public ResponseEntity<Abono> registrarAbono(@RequestBody Abono abono) {
-        Abono abonoRegistrado = cabFacturaService.registrarAbono(abono);
+        Abono abonoRegistrado = abonoService.registrarAbono(abono, null);
         return new ResponseEntity<>(abonoRegistrado, HttpStatus.CREATED);
     }
 
     @GetMapping("/historial-abonos")
     public ResponseEntity<List<HistorialAbonosDTO>> obtenerHistoricoAbonos() {
-        List<HistorialAbonosDTO> cabeceras = cabFacturaService.obtenerHistorialAbonos();
+        List<HistorialAbonosDTO> cabeceras = abonoService.obtenerHistorialAbonos();
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 }

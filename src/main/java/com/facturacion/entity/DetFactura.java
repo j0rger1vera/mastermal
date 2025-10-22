@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="det_factura")
+@Table(name = "det_factura")
 public class DetFactura {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,10 +29,10 @@ public class DetFactura {
     @Column(name = "cantidad")
     private Integer cantidad;
 
-    @Column(name = "valor_unitario", columnDefinition = "DECIMAL(10,2)")
+    @Column(name = "valor_unitario", precision = 10, scale = 2)
     private BigDecimal valUnitarioProducto;
 
-    @Column(name = "valor_total", columnDefinition = "DECIMAL(10,2)")
+    @Column(name = "valor_total", precision = 10, scale = 2)
     private BigDecimal valTotalProducto;
 
     @JsonBackReference

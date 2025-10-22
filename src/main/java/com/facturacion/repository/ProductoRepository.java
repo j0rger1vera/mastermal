@@ -12,12 +12,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductoRepository extends CrudRepository<Producto, Integer> {
 
-    @Query(value = "SELECT codigo as cod_producto FROM facturacion.producto where codigo = :cod_producto", nativeQuery = true)
+    @Query(value = "SELECT codigo as cod_producto FROM producto where codigo = :cod_producto", nativeQuery = true)
     public String verificarSiExiteElCodProducto(@Param("cod_producto") String cod_producto);
 
     @Modifying
-    @Query(value = "UPDATE facturacion.producto SET stock = stock - :cantidad WHERE codigo = :id_producto", nativeQuery = true)
-    public Integer disminuirStock(@Param("id_producto") Integer id_producto, @Param("cantidad") Integer cantidad);
+    @Query(value = "UPDATE producto SET stock = stock - :cantidad WHERE codigo = :id_producto", nativeQuery = true)
+    public Integer disminuirStock(@Param("id_producto") String id_producto, @Param("cantidad") Integer cantidad);
 
 
 

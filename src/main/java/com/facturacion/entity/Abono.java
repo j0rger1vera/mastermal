@@ -1,27 +1,22 @@
 package com.facturacion.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-@Entity(name = "abonos")
+@Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "abonos")
 public class Abono {
 
     @Id
@@ -29,17 +24,18 @@ public class Abono {
     @Column(name = "id_abono")
     private Integer idAbono;
 
-    @Column(name = "valor_abono", columnDefinition = "DECIMAL(10,2)")
-    private String valorAbono;
+    @Column(name = "valor_abono", nullable = false, precision = 10, scale = 2)
+    private BigDecimal valorAbono;
 
-    private LocalDate fechaAbono;
+    @Column(name = "fecha_abono", nullable = false)
+    private LocalDateTime fechaAbono;
 
-    @Column(name = "val_anterior", columnDefinition = "DECIMAL(10,2)")
-    private String valAnterior;
+    @Column(name = "val_anterior", nullable = false, precision = 10, scale = 2)
+    private BigDecimal valAnterior;
 
-    @Column(name = "total_factura_original", columnDefinition = "DECIMAL(10,2)")
-    private String totalFacturaOriginal;
+    @Column(name = "total_factura_original", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalFacturaOriginal;
 
-    @Column(name = "id_factura")
+    @Column(name = "id_factura", nullable = false)
     private Integer pkCabFactura;
 }

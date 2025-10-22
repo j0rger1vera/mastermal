@@ -53,7 +53,7 @@ public class ProductoService {
     public void disminuirStock(List<DetFacturaDTO> detFacturaDTOs) {
         for (DetFacturaDTO detFacturaDTO : detFacturaDTOs) {
             System.out.println("detFacturaDTO::::" +detFacturaDTO.getCodigoProducto() + " " + detFacturaDTO.getCantidad());
-            this.productoRepository.disminuirStock(  detFacturaDTO.getCodigoProducto(),
+            this.productoRepository.disminuirStock(detFacturaDTO.getCodigoProducto(),
                     detFacturaDTO.getCantidad()
             );
         }

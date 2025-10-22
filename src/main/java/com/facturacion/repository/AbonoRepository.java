@@ -10,8 +10,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -20,7 +22,7 @@ public interface AbonoRepository extends CrudRepository<Abono, Integer> {
     @Query(value = "SELECT a.id_abono, f.num_factura, a.valor_abono, a.fecha_abono, a.val_anterior, a.total_factura_original, c.nombre " +
         "FROM abonos a " +
         "INNER JOIN cab_factura f ON f.id_factura = a.id_factura " +
-        "INNER JOIN cliente c ON c.id_cliente = f.ruc_cliente " +
+        "INNER JOIN cliente c ON c.id_cliente = CAST(f.ruc_cliente AS INTEGER) " +
         "ORDER BY f.num_factura DESC", nativeQuery = true)
     List<Object[]> getHistoricoAbonos();
 
@@ -32,7 +34,8 @@ public interface AbonoRepository extends CrudRepository<Abono, Integer> {
             dto.setIdAbono((Integer) record[0]);
             dto.setNumeroFactura((Integer) record[1]);
             dto.setAbono((BigDecimal) record[2]);
-            dto.setFechaAbono(formatter.format(record[3]));
+            String fechaAbonoString = ((Timestamp) record[3]).toLocalDateTime().toString().replace('T', ' ');
+            dto.setFechaAbono(fechaAbonoString.substring(0, fechaAbonoString.length() - 5));
             dto.setAbonoAnterior((BigDecimal) record[4]);
             dto.setTotalFactura((BigDecimal) record[5]);
             dto.setNombreCliente(record[6].toString().toUpperCase());

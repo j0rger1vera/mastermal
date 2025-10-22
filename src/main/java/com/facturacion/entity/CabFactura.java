@@ -8,7 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -24,32 +25,39 @@ public class CabFactura {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_factura")
     private Integer idFactura;
-    @Column(name = "num_factura")
+
+    @Column(name = "num_factura", unique = true)
     private Integer numeroFactura;
-    @Column(name = "fecha")
-    private String fecha;
+
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fecha;
+
     @Column(name = "ruc_cliente")
     private String rucCliente;
+
     @Column(name = "nombre")
     private String detalle;
 
-    @Column(name = "subtotal", columnDefinition = "DECIMAL(10,2)")
-    private String subtotal;
-    @Column(name = "igv", columnDefinition = "DECIMAL(10,2)")
-    private String igv;
-    @Column(name = "total", columnDefinition = "DECIMAL(10,2)")
-    private String total;
-    @Column(name = "abono", columnDefinition = "DECIMAL(10,2)")
-    private String abono;
-    @Column(name = "saldo", columnDefinition = "DECIMAL(10,2)")
-    private String saldo;
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    private BigDecimal subtotal;
 
+    @Column(name = "igv", precision = 10, scale = 2)
+    private BigDecimal igv;
+
+    @Column(name = "total", precision = 10, scale = 2)
+    private BigDecimal total;
+
+    @Column(name = "abono", precision = 10, scale = 2)
+    private BigDecimal abono;
+
+    @Column(name = "saldo", precision = 10, scale = 2)
+    private BigDecimal saldo;
 
     @JsonManagedReference
     @OneToMany(mappedBy = "pkCabFactura", cascade = CascadeType.ALL)
     private List<DetFactura> detFactura;
 
-    private String valAbonoIngresado;
-    private String valAbonoAnterior;
+    private BigDecimal valAbonoIngresado;
+    private BigDecimal valAbonoAnterior;
 
 }

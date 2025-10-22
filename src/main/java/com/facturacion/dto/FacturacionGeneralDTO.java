@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 public class FacturacionGeneralDTO {
-        private Integer idFactura;
+        private String idFactura;
         private Integer numeroFactura;
         private String rucCliente;
         private String nombreCliente;
