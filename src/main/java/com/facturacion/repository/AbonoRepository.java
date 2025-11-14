@@ -32,7 +32,7 @@ public interface AbonoRepository extends CrudRepository<Abono, Integer> {
             dto.setIdAbono((Integer) record[0]);
             dto.setNumeroFactura((Integer) record[1]);
             dto.setAbono((BigDecimal) record[2]);
-            dto.setFechaAbono(formatter.format(record[3]));
+                dto.setFechaAbono((String) record[3]);
             dto.setAbonoAnterior((BigDecimal) record[4]);
             dto.setTotalFactura((BigDecimal) record[5]);
             dto.setNombreCliente(record[6].toString().toUpperCase());
