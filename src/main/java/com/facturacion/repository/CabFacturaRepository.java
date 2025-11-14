@@ -68,7 +68,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
             dto.setDetalle((String) record[5]);
             dto.setTotal((BigDecimal) record[6]);
             dto.setNumeroFactura((Integer) record[7]);
-            dto.setFecha(record[8].toString());
+            dto.setFecha(Objects.isNull(record[8]) ? "" : record[8].toString());
             dto.setSubtotal((BigDecimal) record[9]);
             return dto;
         }).toList();

@@ -35,7 +35,7 @@ public interface AbonoRepository extends CrudRepository<Abono, Integer> {
             dto.setNumeroFactura((Integer) record[1]);
             dto.setAbono((BigDecimal) record[2]);
             String fechaAbonoString = ((Timestamp) record[3]).toLocalDateTime().toString().replace('T', ' ');
-            dto.setFechaAbono(fechaAbonoString.substring(0, fechaAbonoString.length() - 5));
+            dto.setFechaAbono(fechaAbonoString.substring(0, fechaAbonoString.length() - 7));
             dto.setAbonoAnterior((BigDecimal) record[4]);
             dto.setTotalFactura((BigDecimal) record[5]);
             dto.setNombreCliente(record[6].toString().toUpperCase());

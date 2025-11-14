@@ -45,7 +45,7 @@ public class DetFacturaController {
   }
 
     @GetMapping("/eliminar/{idFactura}")
-    public ResponseEntity<ResponseMessage> obtenerProductosPorFactura(@RequestBody DetFacturaDTO detallesFacturaDto) {
+    public ResponseEntity<ResponseMessage> eliminarPlanchasPorFactura(@RequestBody DetFacturaDTO detallesFacturaDto) {
         detFacturaService.eliminarPlaancha(detallesFacturaDto);
         return ResponseEntity.ok(new ResponseMessage(200, "Plancha eliminada de la factura exitosamente"));
     }

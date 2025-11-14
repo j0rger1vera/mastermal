@@ -103,4 +103,10 @@ public class CabFacturaController {
         List<HistorialAbonosDTO> cabeceras = abonoService.obtenerHistorialAbonos();
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
+
+    @DeleteMapping("/abono/{id}")
+    public ResponseEntity<ResponseMessage> eliminarAbono(@PathVariable String id) {
+        abonoService.eliminarAbonoPorId(id);
+        return ResponseEntity.ok(new ResponseMessage(200, "Abono eliminado exitosamente (reversado)"));
+    }
 }

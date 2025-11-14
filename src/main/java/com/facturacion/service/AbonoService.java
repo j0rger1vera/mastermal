@@ -1,8 +1,11 @@
 package com.facturacion.service;
 
+import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.dto.HistorialAbonosDTO;
 import com.facturacion.entity.Abono;
+import com.facturacion.entity.Auditoria;
 import com.facturacion.entity.CabFactura;
+import com.facturacion.entity.DetFactura;
 import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
 import lombok.AllArgsConstructor;
@@ -12,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -59,5 +63,47 @@ public class AbonoService {
 
     public List<HistorialAbonosDTO> obtenerHistorialAbonos( ) {
         return this.abonoRepository.getAbonos();
+    }
+
+    public void eliminarAbonoPorId(String id) {
+
+        try {
+            Integer abonoId = Integer.parseInt(id);
+            HistorialAbonosDTO abonoBD = null;
+            List<HistorialAbonosDTO> abonos = this.obtenerHistorialAbonos();
+            for (HistorialAbonosDTO abono : abonos) {
+                if (abono.getIdAbono().equals(abonoId)) {
+                    abonoBD = abono;
+                }
+            }
+
+            if (Objects.nonNull(abonoBD)) {
+                this.abonoRepository.deleteById(abonoId);
+
+                Auditoria auditoria = auditarService.registrarMovimiento(abonoBD, "Abono", "Eliminar abono (reversar)");
+
+                List<FacturacionGeneralDTO> listadoFacturas = cabFacturaRepository.getBalanceGeneral();
+                for (FacturacionGeneralDTO facturaDto : listadoFacturas) {
+                    if (facturaDto.getNumeroFactura().equals(abonoBD.getNumeroFactura())) {
+
+                        Optional<CabFactura> factura = cabFacturaRepository.findById(Integer.parseInt(facturaDto.getIdFactura()));
+                        if (factura.isPresent()){
+                            CabFactura facturaEditar = factura.get();
+                            facturaEditar.setSaldo(facturaEditar.getSaldo().add(facturaEditar.getAbono()));
+                            facturaEditar.setAbono(facturaEditar.getAbono().subtract(abonoBD.getAbono().abs()));
+                            cabFacturaRepository.save(facturaEditar);
+                            System.out.println("Se reversó el abono de la factura "+ auditoria.getFecha());
+                        }
+                    }
+                }
+                System.out.println("Se eliminó el abono y se registró auditoría "+auditoria.getFecha());
+            } else {
+                System.out.println("No se encontró el abono con ID: " + id);
+            }
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("El ID proporcionado no es un número válido: " + id, e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
