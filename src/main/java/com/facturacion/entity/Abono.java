@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity(name = "abonos")
 @Getter
@@ -32,7 +33,7 @@ public class Abono {
     @Column(name = "valor_abono", columnDefinition = "DECIMAL(10,2)")
     private String valorAbono;
 
-    private LocalDate fechaAbono;
+    private String fechaAbono;
 
     @Column(name = "val_anterior", columnDefinition = "DECIMAL(10,2)")
     private String valAnterior;

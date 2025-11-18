@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -129,12 +130,18 @@ public class CabFacturaService {
     }
 
     private Abono traducirFacturaToAbono(CabFactura cabFactura){
+        LocalDateTime ahora = LocalDateTime.now();
+
+        // 2. Formatear la fecha y hora
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String fechaFormateada = ahora.format(formato);
+
         Abono abono = Abono.builder()
             .valorAbono(cabFactura.getValAbonoIngresado())
             .valAnterior(cabFactura.getValAbonoAnterior())
             .totalFacturaOriginal(cabFactura.getTotal())
             .pkCabFactura(cabFactura.getIdFactura())
-            .fechaAbono(LocalDate.now())
+            .fechaAbono(fechaFormateada)
             .build();
 
         return abono;
