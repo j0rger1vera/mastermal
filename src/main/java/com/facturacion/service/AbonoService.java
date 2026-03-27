@@ -1,21 +1,20 @@
 package com.facturacion.service;
 
-import com.facturacion.dto.FacturacionGeneralDTO;
+import com.facturacion.dto.AbonoDTO;
 import com.facturacion.dto.HistorialAbonosDTO;
 import com.facturacion.entity.Abono;
-import com.facturacion.entity.Auditoria;
 import com.facturacion.entity.CabFactura;
-import com.facturacion.entity.DetFactura;
+import com.facturacion.enums.EstadoFactura;
+import com.facturacion.exception.AbonoInvalidoException;
 import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
+import com.facturacion.repository.HistorialAbonosView;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -23,87 +22,181 @@ public class AbonoService {
 
     private static final String FUNCION_ABONOS = "Abonos";
     private static final String OPERACION_AGREGAR_ABONO = "Agregar abono";
+
     private final AbonoRepository abonoRepository;
     private final CabFacturaRepository cabFacturaRepository;
     private final AuditarService auditarService;
 
-    public void abonarAFactura(CabFactura cabFactura) {
-        if ((Objects.nonNull(cabFactura.getValAbonoIngresado()) &&
-                cabFactura.getValAbonoIngresado().compareTo(BigDecimal.ZERO) > 0) ||
-                (Objects.nonNull(cabFactura.getAbono()) &&
-                        cabFactura.getAbono().compareTo(BigDecimal.ZERO) > 0)) {
-            Abono logAbono = traducirFacturaToAbono(cabFactura);
-            registrarAbono(logAbono, cabFactura);
-        }
+    // =====================
+    // ABONO NORMAL
+    // =====================
+
+    @Transactional
+    public Abono registrarAbono(AbonoDTO request) {
+
+        CabFactura factura = cabFacturaRepository.findById(request.getIdFactura())
+                .orElseThrow(() -> new AbonoInvalidoException("Factura no encontrada"));
+
+        validarFacturaParaAbono(factura, request.getValorAbono());
+
+        return registrarAbonoDesdeFactura(
+                factura,
+                request.getValorAbono(),
+                OPERACION_AGREGAR_ABONO
+        );
     }
 
-    private Abono traducirFacturaToAbono(CabFactura cabFactura){
+    // =====================
+    // ABONO INICIAL
+    // =====================
+
+    @Transactional
+    public void registrarAbonoInicial(CabFactura factura) {
+
+        if (factura.getAbono().compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        validarFacturaParaAbono(factura, factura.getAbono());
+
         Abono abono = Abono.builder()
-                .valorAbono(cabFactura.getValAbonoIngresado().compareTo(BigDecimal.ZERO)>0 ? cabFactura.getValAbonoIngresado() : cabFactura.getAbono())
-                .valAnterior(cabFactura.getValAbonoAnterior())
-                .totalFacturaOriginal(cabFactura.getTotal())
-                .pkCabFactura(Objects.isNull(cabFactura.getIdFactura()) ? cabFacturaRepository.generaFactura() : cabFactura.getIdFactura())
-                .fechaAbono(LocalDateTime.now())
+                .valorAbono(factura.getAbono())
+                .valAnterior(BigDecimal.ZERO)
+                .totalFacturaOriginal(factura.getTotal())
+                .pkCabFactura(factura.getIdFactura())
                 .build();
+
+        abonoRepository.save(abono);
+
+        auditarService.registrarMovimiento(
+                abono,
+                FUNCION_ABONOS,
+                "Agregar abono inicial"
+        );
+    }
+
+    // =====================
+    // LÓGICA CENTRAL
+    // =====================
+
+    private Abono registrarAbonoDesdeFactura(
+            CabFactura factura,
+            BigDecimal valorAbono,
+            String operacion
+    ) {
+
+        BigDecimal abonoActual = valorSeguro(factura.getAbono());
+        BigDecimal nuevoAbono = abonoActual.add(valorAbono);
+        BigDecimal nuevoSaldo = factura.getSaldo().subtract(valorAbono);
+
+        Abono abono = Abono.builder()
+                .valorAbono(valorAbono)
+                .valAnterior(abonoActual)
+                .totalFacturaOriginal(factura.getTotal())
+                .pkCabFactura(factura.getIdFactura())
+                .build();
+
+        abonoRepository.save(abono);
+
+        factura.setAbono(nuevoAbono);
+        factura.setSaldo(nuevoSaldo);
+        factura.setEstado(determinarEstado(nuevoSaldo, factura.getTotal()));
+
+        cabFacturaRepository.save(factura);
+
+        auditarService.registrarMovimiento(
+                abono,
+                FUNCION_ABONOS,
+                operacion
+        );
 
         return abono;
     }
 
-    public Abono registrarAbono(Abono abono, CabFactura cabFactura) {
-        Abono abonoCreado = this.abonoRepository.save(abono);
-        auditarService.registrarMovimiento(abonoCreado, FUNCION_ABONOS, OPERACION_AGREGAR_ABONO);
-        if (Objects.nonNull(cabFactura)) {
-            cabFactura.setAbono(Objects.isNull(cabFactura.getAbono()) ?
-                    new BigDecimal(0).add(abono.getValorAbono()) :
-                    cabFactura.getValAbonoAnterior().add(abono.getValorAbono()));
-            this.cabFacturaRepository.save(cabFactura);
+    // =====================
+    // REVERSO
+    // =====================
+
+    @Transactional
+    public void eliminarAbonoPorId(Integer abonoId) {
+
+        Abono abono = abonoRepository.findById(abonoId)
+                .orElseThrow(() -> new AbonoInvalidoException("Abono no encontrado"));
+
+        CabFactura factura = cabFacturaRepository.findById(abono.getPkCabFactura())
+                .orElseThrow(() -> new AbonoInvalidoException("Factura no encontrada"));
+
+        factura.setAbono(factura.getAbono().subtract(abono.getValorAbono()));
+        factura.setSaldo(factura.getSaldo().add(abono.getValorAbono()));
+        factura.setEstado(determinarEstado(factura.getSaldo(), factura.getTotal()));
+
+        cabFacturaRepository.save(factura);
+        abonoRepository.delete(abono);
+
+        auditarService.registrarMovimiento(
+                abono,
+                FUNCION_ABONOS,
+                "Eliminar abono"
+        );
+    }
+
+    // =====================
+    // CONSULTA
+    // =====================
+
+    public List<HistorialAbonosView> obtenerHistorialAbonos() {
+        return abonoRepository.obtenerHistoricoAbonos();
+    }
+
+    public List<HistorialAbonosDTO> obtenerHistorialPorFactura(Integer numFactura) {
+        return abonoRepository.obtenerHistorialPorFactura(numFactura);
+    }
+
+    // =====================
+    // VALIDACIONES
+    // =====================
+
+    private void validarFacturaParaAbono(CabFactura factura, BigDecimal valorAbono) {
+
+        if (factura.getEstado() == EstadoFactura.PAGADA) {
+            throw new AbonoInvalidoException(
+                    "No se puede registrar abonos en una factura pagada"
+            );
         }
-        return abonoCreado;
-    }
 
-    public List<HistorialAbonosDTO> obtenerHistorialAbonos( ) {
-        return this.abonoRepository.getAbonos();
-    }
+        if (valorAbono.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AbonoInvalidoException(
+                    "El valor del abono debe ser mayor a cero"
+            );
+        }
 
-    public void eliminarAbonoPorId(String id) {
-
-        try {
-            Integer abonoId = Integer.parseInt(id);
-            HistorialAbonosDTO abonoBD = null;
-            List<HistorialAbonosDTO> abonos = this.obtenerHistorialAbonos();
-            for (HistorialAbonosDTO abono : abonos) {
-                if (abono.getIdAbono().equals(abonoId)) {
-                    abonoBD = abono;
-                }
-            }
-
-            if (Objects.nonNull(abonoBD)) {
-                this.abonoRepository.deleteById(abonoId);
-
-                Auditoria auditoria = auditarService.registrarMovimiento(abonoBD, "Abono", "Eliminar abono (reversar)");
-
-                List<FacturacionGeneralDTO> listadoFacturas = cabFacturaRepository.getBalanceGeneral();
-                for (FacturacionGeneralDTO facturaDto : listadoFacturas) {
-                    if (facturaDto.getNumeroFactura().equals(abonoBD.getNumeroFactura())) {
-
-                        Optional<CabFactura> factura = cabFacturaRepository.findById(Integer.parseInt(facturaDto.getIdFactura()));
-                        if (factura.isPresent()){
-                            CabFactura facturaEditar = factura.get();
-                            facturaEditar.setSaldo(facturaEditar.getSaldo().add(facturaEditar.getAbono()));
-                            facturaEditar.setAbono(facturaEditar.getAbono().subtract(abonoBD.getAbono().abs()));
-                            cabFacturaRepository.save(facturaEditar);
-                            System.out.println("Se reversó el abono de la factura "+ auditoria.getFecha());
-                        }
-                    }
-                }
-                System.out.println("Se eliminó el abono y se registró auditoría "+auditoria.getFecha());
-            } else {
-                System.out.println("No se encontró el abono con ID: " + id);
-            }
-        } catch (NumberFormatException e) {
-            throw new RuntimeException("El ID proporcionado no es un número válido: " + id, e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (valorAbono.compareTo(factura.getSaldo()) > 0) {
+            throw new AbonoInvalidoException(
+                    "El abono no puede ser mayor al saldo pendiente"
+            );
         }
     }
+
+    private EstadoFactura determinarEstado(BigDecimal saldo, BigDecimal total) {
+
+        if (saldo.compareTo(total) == 0) {
+            return EstadoFactura.PENDIENTE;
+        }
+
+        if (saldo.compareTo(BigDecimal.ZERO) == 0) {
+            return EstadoFactura.PAGADA;
+        }
+
+        if (saldo.compareTo(BigDecimal.ZERO) > 0
+                && saldo.compareTo(total) < 0) {
+            return EstadoFactura.PARCIAL;
+        }
+
+        throw new IllegalStateException("Estado financiero inconsistente");
+    }
+
+    private BigDecimal valorSeguro(BigDecimal valor) {
+        return valor != null ? valor : BigDecimal.ZERO;
+    }
+
 }

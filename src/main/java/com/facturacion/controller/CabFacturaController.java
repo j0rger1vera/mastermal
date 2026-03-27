@@ -1,12 +1,16 @@
 package com.facturacion.controller;
 
+import com.facturacion.dto.AbonoDTO;
+import com.facturacion.dto.ActualizarFacturaRequestDTO;
+import com.facturacion.dto.CrearFacturaRequestDTO;
+import com.facturacion.dto.CabFacturaResponseDTO;
+import com.facturacion.dto.FacturaDetalleResponseDTO;
 import com.facturacion.dto.FacturacionGeneralDTO;
-import com.facturacion.dto.HistorialAbonosDTO;
-import com.facturacion.entity.Abono;
-import com.facturacion.entity.CabFactura;
 import com.facturacion.service.AbonoService;
 import com.facturacion.service.CabFacturaService;
 import com.facturacion.util.ResponseMessage;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,99 +18,89 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cab-factura")
+@RequestMapping("/api/facturas")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class CabFacturaController {
 
     private final CabFacturaService cabFacturaService;
     private final AbonoService abonoService;
 
-    public CabFacturaController(CabFacturaService cabFacturaService, AbonoService abonoService) {
-        this.cabFacturaService = cabFacturaService;
-        this.abonoService = abonoService;
+    @PostMapping
+    public ResponseEntity<CabFacturaResponseDTO> guardarFactura(
+            @RequestBody CrearFacturaRequestDTO request) {
+
+        CabFacturaResponseDTO response = cabFacturaService.crearFactura(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<FacturacionGeneralDTO>> listarFacturas() {
+        return ResponseEntity.ok(cabFacturaService.listarFacturas());
+    }
+
+    @GetMapping("/cliente/{nit}")
+    public ResponseEntity<List<FacturacionGeneralDTO>> listarPorCliente(
+            @PathVariable("nit") String nitCliente) {
+        return ResponseEntity.ok(cabFacturaService.listarPorCliente(nitCliente));
+    }
+
+    @GetMapping("/numfactura")
+    public ResponseEntity<Integer> generaNumeroDeFactura() {
+        return ResponseEntity.ok(cabFacturaService.generaFactura());
+    }
+
+    @PostMapping("/abonos")
+    public ResponseEntity<ResponseMessage> registrarAbono(
+            @Valid @RequestBody AbonoDTO abonoDTO) {
+
+        abonoService.registrarAbono(abonoDTO);
+        return ResponseEntity.ok(new ResponseMessage("Abono registrado correctamente"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CabFactura> obtenerFacturaPorId(@PathVariable("id") Integer id) {
+    public ResponseEntity<CabFacturaResponseDTO> obtenerPorId(
+            @PathVariable("id") Integer id) {
+
         return cabFacturaService.obtenerPorId(id)
-                .map(factura -> new ResponseEntity<>(factura, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .map(factura -> ResponseEntity.ok(
+                        cabFacturaService.mapToResponseDTO(factura)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<CabFactura> guardarFactura(@RequestBody CabFactura cabFactura) {
-        CabFactura facturaGuardada = cabFacturaService.guardarCabFactura(cabFactura);
-        return new ResponseEntity<>(facturaGuardada, HttpStatus.CREATED);
+    @GetMapping("/{id}/detalle")
+    public ResponseEntity<FacturaDetalleResponseDTO> obtenerDetalleFactura(
+            @PathVariable("id") Integer id) {
+        return ResponseEntity.ok(cabFacturaService.obtenerDetalleFactura(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarFacturaPorId(@PathVariable("id") Integer id) {
         cabFacturaService.eliminarPorId(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/numfactura")
-    public ResponseEntity<ResponseMessage> generaFactura() {
-        Integer newNumeroFactura = cabFacturaService.generaFactura();
-        return new ResponseEntity(newNumeroFactura, HttpStatus.OK);
-    }
-
-    @GetMapping("/facturacion")
-    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerBalanceGeneral() {
-        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerSaldosPorCliente();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
-    }
-
-    @GetMapping
+    @GetMapping("/cabeceras")
     public ResponseEntity<List<FacturacionGeneralDTO>> obtenerTodasCabeceras() {
-        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerTodasFacturas();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+        return ResponseEntity.ok(cabFacturaService.listarFacturas());
     }
 
     @PutMapping("/actualizar")
-    public ResponseEntity<Void> actualizarFactura(@RequestBody CabFactura cabFactura) {
-        this.cabFacturaService.actualizarFactura(cabFactura);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+    public ResponseEntity<CabFacturaResponseDTO> actualizarFactura(
+            @RequestBody ActualizarFacturaRequestDTO request) {
 
-    @GetMapping("/cliente/{nit}")
-    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturaPorCliente(@PathVariable("nit") String nitCliente) {
-        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerPorNitCliente(nitCliente);
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+        CabFacturaResponseDTO response = cabFacturaService.actualizarFactura(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/saldos")
     public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturasConSaldos() {
-        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.obtenerFacturasConSaldos();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+        return ResponseEntity.ok(cabFacturaService.obtenerFacturasConSaldos());
     }
 
     @GetMapping("/porcobrar")
     public ResponseEntity<List<FacturacionGeneralDTO>> saldosPorCobrar() {
-        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.consultarSaldosPorCobrar();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+        return ResponseEntity.ok(cabFacturaService.consultarSaldosPorCobrar());
     }
 
-    @PutMapping("/abonar")
-    public ResponseEntity<Void> abonarAFactura(@RequestBody CabFactura cabFactura) {
-        this.abonoService.abonarAFactura(cabFactura);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PostMapping("/registrar-abono")
-    public ResponseEntity<Abono> registrarAbono(@RequestBody Abono abono) {
-        Abono abonoRegistrado = abonoService.registrarAbono(abono, null);
-        return new ResponseEntity<>(abonoRegistrado, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/historial-abonos")
-    public ResponseEntity<List<HistorialAbonosDTO>> obtenerHistoricoAbonos() {
-        List<HistorialAbonosDTO> cabeceras = abonoService.obtenerHistorialAbonos();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/abono/{id}")
-    public ResponseEntity<ResponseMessage> eliminarAbono(@PathVariable String id) {
-        abonoService.eliminarAbonoPorId(id);
-        return ResponseEntity.ok(new ResponseMessage(200, "Abono eliminado exitosamente (reversado)"));
-    }
 }

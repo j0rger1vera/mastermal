@@ -18,4 +18,6 @@ public class ResponseMessage {
         this.data = data;
     }
 
+    public ResponseMessage(String abonoRegistradoCorrectamente) {
+    }
 }

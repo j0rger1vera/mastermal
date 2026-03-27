@@ -42,12 +42,19 @@ public class AuditarService {
   public Auditoria armarValores(Object datos, String funcion, String operacion) {
     ParametroRegistro parametros = builder.armarValores(datos);
     return Auditoria.builder()
-        .campo(parametros.getNombresCampos())
-        .valor(parametros.getValoresCampos())
+        .campo(truncar(parametros.getNombresCampos(), 4000))
+        .valor(truncar(parametros.getValoresCampos(), 4000))
         .fecha(LocalDateTime.now())
         .funcionalidad(funcion)
         .operacion(operacion)
         .build();
   }
+
+    private String truncar(String valor, int maxLength) {
+        if (valor == null) {
+            return null;
+        }
+        return valor.length() > maxLength ? valor.substring(0, maxLength) : valor;
+    }
 
 }

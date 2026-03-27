@@ -25,9 +25,9 @@ public class UsuarioService {
     }
     public boolean estaBloqueado(String username) {
         LOGGER.info("Verificando si el usuario {} esta bloqueado", username);
-        Optional<Byte> bloqueado = this.usuarioRepository.estaBloqueado(username);
+        Optional<Boolean> bloqueado = this.usuarioRepository.estaBloqueado(username);
         LOGGER.info("Verificando si el usuario {} esta bloqueado", bloqueado);
-        return bloqueado.orElse((byte) 0) == 1; // Si no se encuentra el usuario, se asume que no está bloqueado
+        return bloqueado.orElse(false); // Si no se encuentra el usuario, se asume que no está bloqueado
     }
 
     public void incrementarIntentosFallidos(String username) {

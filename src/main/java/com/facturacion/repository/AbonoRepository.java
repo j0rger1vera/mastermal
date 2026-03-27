@@ -19,26 +19,52 @@ import java.util.List;
 @Repository
 public interface AbonoRepository extends CrudRepository<Abono, Integer> {
 
-    @Query(value = "SELECT a.id_abono, f.num_factura, a.valor_abono, a.fecha_abono, a.val_anterior, a.total_factura_original, c.nombre " +
-        "FROM abonos a " +
+    @Query(value = "" +
+        "SELECT " +
+            "a.id_abono AS idAbono, " +
+            "f.num_factura AS numeroFactura, " +
+            "a.valor_abono AS Abono, " +
+            "a.fecha_abono AS fechaAbono, " +
+            "a.val_anterior AS abonoAnterior, " +
+            "a.total_factura_original AS totalFactura, " +
+            "UPPER(c.nombre) AS nombreCliente FROM abonos a " +
         "INNER JOIN cab_factura f ON f.id_factura = a.id_factura " +
-        "INNER JOIN cliente c ON c.id_cliente = CAST(f.ruc_cliente AS INTEGER) " +
+        "LEFT JOIN cliente c ON f.ruc_cliente = c.ruc_dni " +
         "ORDER BY f.num_factura DESC", nativeQuery = true)
-    List<Object[]> getHistoricoAbonos();
+    List<HistorialAbonosView> obtenerHistoricoAbonos();
 
-    default List<HistorialAbonosDTO> getAbonos() {
-        List<Object[]> results = getHistoricoAbonos();
-        return results.stream().map(record -> {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    @Query(value = """
+    SELECT 
+        a.id_abono,
+        f.num_factura,
+        a.valor_abono,
+        a.fecha_abono,
+        a.val_anterior,
+        a.total_factura_original,
+        c.nombre
+    FROM abonos a
+    INNER JOIN cab_factura f ON f.id_factura = a.id_factura
+    INNER JOIN cliente c ON f.ruc_cliente = c.ruc_dni
+    WHERE f.num_factura = :numFactura AND f.id_factura = a.id_factura
+    ORDER BY a.fecha_abono DESC
+    """, nativeQuery = true)
+    List<Object[]> obtenerHistorialPorFacturaRaw(Integer numFactura);
+
+    default List<HistorialAbonosDTO> obtenerHistorialPorFactura(Integer numFactura) {
+        return obtenerHistorialPorFacturaRaw(numFactura).stream().map(record -> {
             HistorialAbonosDTO dto = new HistorialAbonosDTO();
-            dto.setIdAbono((Integer) record[0]);
-            dto.setNumeroFactura((Integer) record[1]);
+            dto.setIdAbono(((Number) record[0]).intValue());
+            dto.setNumeroFactura(((Number) record[1]).intValue());
             dto.setAbono((BigDecimal) record[2]);
-            String fechaAbonoString = ((Timestamp) record[3]).toLocalDateTime().toString().replace('T', ' ');
-            dto.setFechaAbono(fechaAbonoString.substring(0, fechaAbonoString.length() - 7));
+            Object fecha = record[3];
+            if (fecha instanceof java.sql.Timestamp ts) {
+                dto.setFechaAbono(ts.toLocalDateTime());
+            } else {
+                dto.setFechaAbono(LocalDateTime.parse(fecha.toString().replace(" ", "T")));
+            }
             dto.setAbonoAnterior((BigDecimal) record[4]);
             dto.setTotalFactura((BigDecimal) record[5]);
-            dto.setNombreCliente(record[6].toString().toUpperCase());
+            dto.setNombreCliente(record[6].toString());
             return dto;
         }).toList();
     }

@@ -11,7 +11,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UsuarioRepository extends CrudRepository<Usuario, String> {
+public interface UsuarioRepository extends CrudRepository<Usuario, Long> {
+
+    boolean existsByUsername(String username);
+
+    Optional<Usuario> findByUsername(String username);
 
     @Query(value = "SELECT username, password FROM usuario WHERE username = :username AND password = :password", nativeQuery = true)
     Optional<Object[]> findByUsernameAndPasswords(@Param("username") String username, @Param("password") String password);
@@ -21,7 +25,7 @@ public interface UsuarioRepository extends CrudRepository<Usuario, String> {
 
 
     @Query(value = "SELECT bloqueado FROM usuario WHERE username = :username", nativeQuery = true)
-    Optional<Byte> estaBloqueado(@Param("username") String username);
+    Optional<Boolean> estaBloqueado(@Param("username") String username);
 
     @Modifying
     @Transactional

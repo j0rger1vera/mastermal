@@ -11,13 +11,23 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "usuario")
 public class Usuario {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false, length = 50)
     private String username;
+
+    @Column(nullable = false, length = 50)
     private String password;
+
+    @Column(name = "intentos_fallidos", nullable = false)
     private Integer intentosFallidos;
-    @Column(columnDefinition = "TINYINT")
-    private Byte bloqueado;
+
+    @Column(name = "bloqueado", nullable = false)
+    private Boolean bloqueado;
 
 }
