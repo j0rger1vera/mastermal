@@ -25,13 +25,17 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         List<Object[]> results = getBalanceGeneralRaw();
         return results.stream().map(record -> {
             FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
+            BigDecimal total = record[6] != null ? (BigDecimal) record[6] : BigDecimal.ZERO;
+            BigDecimal abono = record[4] != null ? (BigDecimal) record[4] : BigDecimal.ZERO;
+            BigDecimal saldoCalculado = total.subtract(abono);
+
             dto.setIdFactura((Integer) record[0]);
             dto.setRucCliente((String) record[1]);
-                dto.setNombreCliente((String) record[2].toString().toLowerCase());
-            dto.setSaldo((BigDecimal) record[3]);
-            dto.setAbono((BigDecimal) record[4]);
+            dto.setNombreCliente(record[2] != null ? record[2].toString().toLowerCase() : "");
+            dto.setSaldo(saldoCalculado);
+            dto.setAbono(abono);
             dto.setDetalle((String) record[5]);
-            dto.setTotal((BigDecimal) record[6]);
+            dto.setTotal(total);
             dto.setNumeroFactura((Integer) record[7]);
             dto.setFecha((String) record[8]);
             return dto;

@@ -13,6 +13,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,21 +29,45 @@ public class CabFacturaService {
     private final AuditarService auditarService;
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
-        cabFactura.setFecha((((LocalDateTime.now()).toString()).replace('T', ' ')).substring(0, 19));
-        cabFactura.setTotal(StringUtils.isEmpty(cabFactura.getTotal()) || Objects.isNull(cabFactura.getTotal()) ? "0.00" : cabFactura.getTotal() );
-        cabFactura.setSaldo(StringUtils.isEmpty(cabFactura.getSaldo()) || Objects.isNull(cabFactura.getSaldo()) ? "0.00" : cabFactura.getSaldo() );
-        cabFactura.setAbono(StringUtils.isEmpty(cabFactura.getAbono()) || Objects.isNull(cabFactura.getAbono()) ? "0.00" : cabFactura.getAbono() );
-        cabFactura.setDetalle(StringUtils.isEmpty(cabFactura.getDetalle()) || Objects.isNull(cabFactura.getDetalle()) ? "" : cabFactura.getDetalle() );
-        cabFactura.setValAbonoAnterior(StringUtils.isEmpty(cabFactura.getValAbonoAnterior()) || Objects.isNull(cabFactura.getValAbonoAnterior()) ? "0.00" : cabFactura.getValAbonoAnterior() );
-        cabFactura.setValAbonoIngresado(StringUtils.isEmpty(cabFactura.getValAbonoIngresado()) || Objects.isNull(cabFactura.getValAbonoIngresado()) ? "0.00" : cabFactura.getValAbonoIngresado() );
+        cabFactura.setFecha(LocalDateTime.now().toString().replace('T', ' ').substring(0, 19));
+
+        BigDecimal total = toBigDecimal(cabFactura.getTotal());
+        BigDecimal abono = toBigDecimal(cabFactura.getAbono());
+
+        validarAbono(total, abono);
+
+        BigDecimal saldo = total.subtract(abono);
+
+        cabFactura.setTotal(toMoneyString(total));
+        cabFactura.setAbono(toMoneyString(abono));
+        cabFactura.setSaldo(toMoneyString(saldo));
+        cabFactura.setDetalle(StringUtils.isEmpty(cabFactura.getDetalle()) ? "" : cabFactura.getDetalle());
+        cabFactura.setValAbonoAnterior(toMoneyString(toBigDecimal(cabFactura.getValAbonoAnterior())));
+        cabFactura.setValAbonoIngresado(toMoneyString(toBigDecimal(cabFactura.getValAbonoIngresado())));
+
         CabFactura facturaGuardada = this.cabFacturaRepository.save(cabFactura);
         auditarService.registrarMovimiento(facturaGuardada, "Factura", "Crear factura");
+
         return facturaGuardada;
     }
 
     public void actualizarFactura(CabFactura cabFactura) {
-        this.cabFacturaRepository.save(cabFactura);
-        auditarService.registrarMovimiento(cabFactura, "Factura", "Modificar factura");
+        BigDecimal total = toBigDecimal(cabFactura.getTotal());
+        BigDecimal abono = toBigDecimal(cabFactura.getAbono());
+
+        validarAbono(total, abono);
+
+        BigDecimal saldo = total.subtract(abono);
+
+        cabFactura.setTotal(toMoneyString(total));
+        cabFactura.setAbono(toMoneyString(abono));
+        cabFactura.setSaldo(toMoneyString(saldo));
+        cabFactura.setDetalle(
+                StringUtils.isEmpty(cabFactura.getDetalle()) ? "" : cabFactura.getDetalle()
+        );
+
+        CabFactura facturaGuardada = this.cabFacturaRepository.save(cabFactura);
+        auditarService.registrarMovimiento(facturaGuardada, "Factura", "Modificar factura");
     }
 
     public List<CabFactura> obtenerTodas( ) {
@@ -112,11 +138,36 @@ public class CabFacturaService {
     }
 
     public void abonarAFactura(CabFactura cabFactura) {
-        if (Integer.parseInt(cabFactura.getValAbonoIngresado())>0) {
-            Abono logAbono = traducirFacturaToAbono(cabFactura);
-            this.cabFacturaRepository.save(cabFactura);
-            registrarAbono(logAbono);
+        BigDecimal valAbonoIngresado = toBigDecimal(cabFactura.getValAbonoIngresado());
+
+        if (valAbonoIngresado.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
         }
+
+        CabFactura facturaActual =
+                cabFacturaRepository.findById(cabFactura.getIdFactura())
+                        .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
+
+        BigDecimal total = toBigDecimal(facturaActual.getTotal());
+        BigDecimal abonoActual = toBigDecimal(facturaActual.getAbono());
+
+        BigDecimal nuevoAbono = abonoActual.add(valAbonoIngresado);
+
+        validarAbono(total, nuevoAbono);
+
+        BigDecimal nuevoSaldo = total.subtract(nuevoAbono);
+
+        facturaActual.setValAbonoAnterior(toMoneyString(abonoActual));
+        facturaActual.setValAbonoIngresado(toMoneyString(valAbonoIngresado));
+        facturaActual.setAbono(toMoneyString(nuevoAbono));
+        facturaActual.setSaldo(toMoneyString(nuevoSaldo));
+
+        Abono logAbono = traducirFacturaToAbono(facturaActual);
+
+        CabFactura facturaGuardada = this.cabFacturaRepository.save(facturaActual);
+        registrarAbono(logAbono);
+
+        auditarService.registrarMovimiento(facturaGuardada, "Factura", "Abonar factura");
     }
 
     public Abono registrarAbono(Abono abono) {
@@ -146,4 +197,32 @@ public class CabFacturaService {
 
         return abono;
     }
+
+    private BigDecimal toBigDecimal(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        return new BigDecimal(value.trim());
+    }
+
+    private String toMoneyString(BigDecimal value) {
+        return value.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    private void validarAbono(BigDecimal total, BigDecimal abono) {
+        if (total.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El total no puede ser negativo");
+        }
+
+        if (abono.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El abono no puede ser negativo");
+        }
+
+        if (abono.compareTo(total) > 0) {
+            throw new IllegalArgumentException("El abono no puede ser mayor al total de la factura");
+        }
+    }
+
+
 }
