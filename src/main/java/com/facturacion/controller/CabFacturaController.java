@@ -120,4 +120,10 @@ public class CabFacturaController {
     public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturasBackup() {
         return ResponseEntity.ok(cabFacturaService.obtenerFacturasSabado());
     }
+
+    @GetMapping("/porcobrar/sabado")
+    public ResponseEntity<List<FacturacionGeneralDTO>> saldosPorCobrarSabado() {
+        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.consultarSaldosPorCobrarSabado();
+        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+    }
 }

@@ -176,4 +176,25 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
             return dto;
         }).toList();
     }
+
+    @Query(value = "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
+            "FROM facturacion_backup_sabado.cliente cl " +
+            "INNER JOIN facturacion_backup_sabado.cab_factura c ON c.ruc_cliente = cl.id_cliente " +
+            "WHERE c.saldo > 0 " +
+            "GROUP BY cl.nombre " +
+            "ORDER BY cl.nombre asc", nativeQuery = true)
+    List<Object[]> getSaldosPorCobrarSabadoQuery();
+
+    default List<FacturacionGeneralDTO> getSaldosPorCobrarSabado() {
+        List<Object[]> results = getSaldosPorCobrarSabadoQuery();
+
+        return results.stream().map(record -> {
+            FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
+            dto.setNombreCliente((String) record[0]);
+            dto.setSaldo(record[1] != null ? (BigDecimal) record[1] : BigDecimal.ZERO);
+            dto.setAbono(record[2] != null ? (BigDecimal) record[2] : BigDecimal.ZERO);
+            dto.setTotal(record[3] != null ? (BigDecimal) record[3] : BigDecimal.ZERO);
+            return dto;
+        }).toList();
+    }
 }

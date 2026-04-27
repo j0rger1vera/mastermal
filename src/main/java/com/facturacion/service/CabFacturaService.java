@@ -246,4 +246,7 @@ public class CabFacturaService {
         return cabFacturaRepository.getBalanceGeneralSabado();
     }
 
+    public List<FacturacionGeneralDTO> consultarSaldosPorCobrarSabado() {
+        return this.cabFacturaRepository.getSaldosPorCobrarSabado();
+    }
 }
