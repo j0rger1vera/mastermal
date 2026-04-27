@@ -240,5 +240,8 @@ public class CabFacturaService {
         }
     }
 
+    public List<CabFactura> obtenerFacturasBackup() {
+        return cabFacturaRepository.getBackupFacturas();
+    }
 
 }

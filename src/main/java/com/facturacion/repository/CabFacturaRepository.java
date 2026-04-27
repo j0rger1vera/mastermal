@@ -135,4 +135,8 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
             return dto;
         }).toList();
     }
+
+
+    @Query(value = "SELECT * FROM cab_factura_backup_sobreabono", nativeQuery = true)
+    List<CabFactura> getBackupFacturas();
 }

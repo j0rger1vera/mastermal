@@ -8,6 +8,7 @@ import com.facturacion.entity.CabFactura;
 import com.facturacion.entity.Cliente;
 import com.facturacion.service.CabFacturaService;
 import com.facturacion.util.ResponseMessage;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -111,5 +112,10 @@ public class CabFacturaController {
     public ResponseEntity<List<HistorialAbonosDTO>> obtenerHistoricoAbonos() {
         List<HistorialAbonosDTO> cabeceras = cabFacturaService.obtenerHistorialAbonos();
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
+    }
+
+    @GetMapping("/backup")
+    public ResponseEntity<List<CabFactura>> obtenerFacturasBackup() {
+        return ResponseEntity.ok(cabFacturaService.obtenerFacturasBackup());
     }
 }
