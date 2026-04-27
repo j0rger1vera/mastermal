@@ -115,7 +115,7 @@ public class CabFacturaController {
     }
 
     @GetMapping("/backup")
-    public ResponseEntity<List<CabFactura>> obtenerFacturasBackup() {
+    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturasBackup() {
         return ResponseEntity.ok(cabFacturaService.obtenerFacturasBackup());
     }
 }

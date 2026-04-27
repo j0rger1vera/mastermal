@@ -136,7 +136,43 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         }).toList();
     }
 
+    /*logica temporal borrar cuando este estable la app*/
 
     @Query(value = "SELECT * FROM cab_factura_backup_sobreabono", nativeQuery = true)
     List<CabFactura> getBackupFacturas();
+
+    @Query(value = """
+    SELECT 
+        c.id_factura,
+        c.ruc_cliente,
+        cl.nombre,
+        c.saldo,
+        c.abono,
+        c.nombre,
+        c.total,
+        c.num_factura,
+        c.fecha
+    FROM cab_factura_backup_sobreabono c
+    LEFT JOIN cliente cl ON c.ruc_cliente = cl.id_cliente
+    ORDER BY c.num_factura DESC
+    """, nativeQuery = true)
+    List<Object[]> getBalanceGeneralBackupRaw();
+
+    default List<FacturacionGeneralDTO> getBalanceGeneralBackup() {
+        List<Object[]> results = getBalanceGeneralBackupRaw();
+
+        return results.stream().map(record -> {
+            FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
+            dto.setIdFactura((Integer) record[0]);
+            dto.setRucCliente((String) record[1]);
+            dto.setNombreCliente(record[2] != null ? record[2].toString().toLowerCase() : "");
+            dto.setSaldo((BigDecimal) record[3]);
+            dto.setAbono((BigDecimal) record[4]);
+            dto.setDetalle(record[5] != null ? (String) record[5] : "");
+            dto.setTotal((BigDecimal) record[6]);
+            dto.setNumeroFactura((Integer) record[7]);
+            dto.setFecha(record[8] != null ? (String) record[8] : "");
+            return dto;
+        }).toList();
+    }
 }
