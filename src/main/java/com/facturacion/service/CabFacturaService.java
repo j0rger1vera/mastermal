@@ -52,21 +52,37 @@ public class CabFacturaService {
     }
 
     public void actualizarFactura(CabFactura cabFactura) {
-        BigDecimal total = toBigDecimal(cabFactura.getTotal());
-        BigDecimal abono = toBigDecimal(cabFactura.getAbono());
+        CabFactura facturaActual =
+                cabFacturaRepository.findById(cabFactura.getIdFactura())
+                        .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
+
+        BigDecimal total = toBigDecimal(
+                StringUtils.isEmpty(cabFactura.getTotal())
+                        ? facturaActual.getTotal()
+                        : cabFactura.getTotal()
+        );
+
+        BigDecimal abono = toBigDecimal(
+                StringUtils.isEmpty(cabFactura.getAbono())
+                        ? facturaActual.getAbono()
+                        : cabFactura.getAbono()
+        );
 
         validarAbono(total, abono);
 
         BigDecimal saldo = total.subtract(abono);
 
-        cabFactura.setTotal(toMoneyString(total));
-        cabFactura.setAbono(toMoneyString(abono));
-        cabFactura.setSaldo(toMoneyString(saldo));
-        cabFactura.setDetalle(
-                StringUtils.isEmpty(cabFactura.getDetalle()) ? "" : cabFactura.getDetalle()
+        facturaActual.setTotal(toMoneyString(total));
+        facturaActual.setAbono(toMoneyString(abono));
+        facturaActual.setSaldo(toMoneyString(saldo));
+
+        facturaActual.setDetalle(
+                StringUtils.isEmpty(cabFactura.getDetalle())
+                        ? facturaActual.getDetalle()
+                        : cabFactura.getDetalle()
         );
 
-        CabFactura facturaGuardada = this.cabFacturaRepository.save(cabFactura);
+        CabFactura facturaGuardada = this.cabFacturaRepository.save(facturaActual);
         auditarService.registrarMovimiento(facturaGuardada, "Factura", "Modificar factura");
     }
 

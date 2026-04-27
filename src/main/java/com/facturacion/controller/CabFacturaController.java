@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -64,7 +65,15 @@ public class CabFacturaController {
 
     @PutMapping("/actualizar")
     public ResponseEntity<Void> actualizarFactura(@RequestBody CabFactura cabFactura) {
-        this.cabFacturaService.actualizarFactura(cabFactura);
+        if (cabFactura.getValAbonoIngresado() != null
+                && !cabFactura.getValAbonoIngresado().trim().isEmpty()
+                && new BigDecimal(cabFactura.getValAbonoIngresado()).compareTo(BigDecimal.ZERO) > 0) {
+
+            this.cabFacturaService.abonarAFactura(cabFactura);
+        } else {
+            this.cabFacturaService.actualizarFactura(cabFactura);
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
