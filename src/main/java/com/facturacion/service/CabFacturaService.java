@@ -240,8 +240,10 @@ public class CabFacturaService {
         }
     }
 
-    public List<FacturacionGeneralDTO> obtenerFacturasBackup() {
-        return cabFacturaRepository.getBalanceGeneralBackup();
+    /*logica temporal borrar cuando este estable la app*/
+
+    public List<FacturacionGeneralDTO> obtenerFacturasSabado() {
+        return cabFacturaRepository.getBalanceGeneralSabado();
     }
 
 }
