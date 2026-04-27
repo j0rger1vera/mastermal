@@ -25,19 +25,17 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         List<Object[]> results = getBalanceGeneralRaw();
         return results.stream().map(record -> {
             FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
-            BigDecimal total = record[6] != null ? (BigDecimal) record[6] : BigDecimal.ZERO;
-            BigDecimal abono = record[4] != null ? (BigDecimal) record[4] : BigDecimal.ZERO;
-            BigDecimal saldoCalculado = total.subtract(abono);
 
             dto.setIdFactura((Integer) record[0]);
             dto.setRucCliente((String) record[1]);
             dto.setNombreCliente(record[2] != null ? record[2].toString().toLowerCase() : "");
-            dto.setSaldo(saldoCalculado);
-            dto.setAbono(abono);
-            dto.setDetalle((String) record[5]);
-            dto.setTotal(total);
+            dto.setSaldo(record[3] != null ? (BigDecimal) record[3] : BigDecimal.ZERO);
+            dto.setAbono(record[4] != null ? (BigDecimal) record[4] : BigDecimal.ZERO);
+            dto.setDetalle(record[5] != null ? (String) record[5] : "");
+            dto.setTotal(record[6] != null ? (BigDecimal) record[6] : BigDecimal.ZERO);
             dto.setNumeroFactura((Integer) record[7]);
-            dto.setFecha((String) record[8]);
+            dto.setFecha(record[8] != null ? (String) record[8] : "");
+
             return dto;
         }).toList();
     }
@@ -117,11 +115,11 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     }
 
     @Query(value = "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
-        "FROM facturacion.cliente cl " +
-        "INNER JOIN facturacion.cab_factura c ON c.ruc_cliente = cl.id_cliente " +
-        "WHERE c.saldo > 0 " +
-        "GROUP BY cl.nombre " +
-        "ORDER BY cl.nombre asc", nativeQuery = true)
+            "FROM cliente cl " +
+            "INNER JOIN cab_factura c ON c.ruc_cliente = cl.id_cliente " +
+            "WHERE c.saldo > 0 " +
+            "GROUP BY cl.nombre " +
+            "ORDER BY cl.nombre asc", nativeQuery = true)
     List<Object[]> getSaldosPorCobrarQuery();
 
     default List<FacturacionGeneralDTO> getSaldosPorCobrar() {
@@ -177,12 +175,20 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         }).toList();
     }
 
-    @Query(value = "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
-            "FROM facturacion_backup_sabado.cliente cl " +
-            "INNER JOIN facturacion_backup_sabado.cab_factura c ON c.ruc_cliente = cl.id_cliente " +
-            "WHERE c.saldo > 0 " +
-            "GROUP BY cl.nombre " +
-            "ORDER BY cl.nombre asc", nativeQuery = true)
+    @Query(value = """
+    SELECT 
+        c.ruc_cliente,
+        cl.nombre,
+        SUM(c.saldo) AS saldo,
+        SUM(c.abono) AS abono,
+        SUM(c.total) AS total
+    FROM facturacion_backup_sabado.cab_factura c
+    LEFT JOIN facturacion_backup_sabado.cliente cl
+        ON c.ruc_cliente = cl.id_cliente
+    WHERE c.saldo > 0
+    GROUP BY c.ruc_cliente, cl.nombre
+    ORDER BY cl.nombre ASC
+    """, nativeQuery = true)
     List<Object[]> getSaldosPorCobrarSabadoQuery();
 
     default List<FacturacionGeneralDTO> getSaldosPorCobrarSabado() {
@@ -190,10 +196,11 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
 
         return results.stream().map(record -> {
             FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
-            dto.setNombreCliente((String) record[0]);
-            dto.setSaldo(record[1] != null ? (BigDecimal) record[1] : BigDecimal.ZERO);
-            dto.setAbono(record[2] != null ? (BigDecimal) record[2] : BigDecimal.ZERO);
-            dto.setTotal(record[3] != null ? (BigDecimal) record[3] : BigDecimal.ZERO);
+            dto.setRucCliente(record[0] != null ? record[0].toString() : "");
+            dto.setNombreCliente(record[1] != null ? record[1].toString().toLowerCase() : "");
+            dto.setSaldo(record[2] != null ? (BigDecimal) record[2] : BigDecimal.ZERO);
+            dto.setAbono(record[3] != null ? (BigDecimal) record[3] : BigDecimal.ZERO);
+            dto.setTotal(record[4] != null ? (BigDecimal) record[4] : BigDecimal.ZERO);
             return dto;
         }).toList();
     }
