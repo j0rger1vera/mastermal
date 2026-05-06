@@ -1,12 +1,9 @@
 package com.facturacion.service;
 
 import com.facturacion.dto.FacturacionGeneralDTO;
-import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.dto.HistorialAbonosDTO;
 import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
-import com.facturacion.entity.Cliente;
-import com.facturacion.entity.DetFactura;
 import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
 import lombok.AllArgsConstructor;
@@ -15,7 +12,6 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -29,7 +25,11 @@ public class CabFacturaService {
     private final AuditarService auditarService;
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
+
+        LocalDateTime ahora = LocalDateTime.now();
+
         cabFactura.setFecha(LocalDateTime.now().toString().replace('T', ' ').substring(0, 19));
+        cabFactura.setFechaCreacion(ahora);
 
         BigDecimal total = toBigDecimal(cabFactura.getTotal());
         BigDecimal abono = toBigDecimal(cabFactura.getAbono());

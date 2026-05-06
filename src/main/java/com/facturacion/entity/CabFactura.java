@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -28,6 +28,8 @@ public class CabFactura {
     private Integer numeroFactura;
     @Column(name = "fecha")
     private String fecha;
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
     @Column(name = "ruc_cliente")
     private String rucCliente;
     @Column(name = "nombre")
