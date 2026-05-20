@@ -82,6 +82,8 @@ public class CabFacturaService {
                         : cabFactura.getDetalle()
         );
 
+        facturaActual.setRucCliente(cabFactura.getRucCliente());
+
         CabFactura facturaGuardada = this.cabFacturaRepository.save(facturaActual);
         auditarService.registrarMovimiento(facturaGuardada, "Factura", "Modificar factura");
     }
@@ -150,7 +152,7 @@ public class CabFacturaService {
 
     public List<FacturacionGeneralDTO> consultarSaldosPorCobrar( ) {
         List<FacturacionGeneralDTO> listaFacturacion = this.cabFacturaRepository.getSaldosPorCobrar();
-            return listaFacturacion;
+        return listaFacturacion;
     }
 
     public void abonarAFactura(CabFactura cabFactura) {
@@ -177,6 +179,7 @@ public class CabFacturaService {
         facturaActual.setValAbonoIngresado(toMoneyString(valAbonoIngresado));
         facturaActual.setAbono(toMoneyString(nuevoAbono));
         facturaActual.setSaldo(toMoneyString(nuevoSaldo));
+        facturaActual.setRucCliente(Objects.nonNull(cabFactura.getRucCliente()) ? cabFactura.getRucCliente() : facturaActual.getRucCliente());
 
         Abono logAbono = traducirFacturaToAbono(facturaActual);
 
@@ -204,12 +207,12 @@ public class CabFacturaService {
         String fechaFormateada = ahora.format(formato);
 
         Abono abono = Abono.builder()
-            .valorAbono(cabFactura.getValAbonoIngresado())
-            .valAnterior(cabFactura.getValAbonoAnterior())
-            .totalFacturaOriginal(cabFactura.getTotal())
-            .pkCabFactura(cabFactura.getIdFactura())
-            .fechaAbono(fechaFormateada)
-            .build();
+                .valorAbono(cabFactura.getValAbonoIngresado())
+                .valAnterior(cabFactura.getValAbonoAnterior())
+                .totalFacturaOriginal(cabFactura.getTotal())
+                .pkCabFactura(cabFactura.getIdFactura())
+                .fechaAbono(fechaFormateada)
+                .build();
 
         return abono;
     }
