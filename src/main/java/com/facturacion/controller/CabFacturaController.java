@@ -66,15 +66,7 @@ public class CabFacturaController {
 
     @PutMapping("/actualizar")
     public ResponseEntity<Void> actualizarFactura(@RequestBody CabFactura cabFactura) {
-        if (cabFactura.getValAbonoIngresado() != null
-                && !cabFactura.getValAbonoIngresado().trim().isEmpty()
-                && new BigDecimal(cabFactura.getValAbonoIngresado()).compareTo(BigDecimal.ZERO) > 0) {
-
-            this.cabFacturaService.abonarAFactura(cabFactura);
-        } else {
-            this.cabFacturaService.actualizarFactura(cabFactura);
-        }
-
+        this.cabFacturaService.actualizarFacturaConAbonoOpcional(cabFactura);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

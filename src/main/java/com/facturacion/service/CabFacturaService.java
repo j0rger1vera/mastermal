@@ -51,6 +51,80 @@ public class CabFacturaService {
         return facturaGuardada;
     }
 
+    public void actualizarFacturaConAbonoOpcional(CabFactura cabFactura) {
+        BigDecimal valAbonoIngresado = toBigDecimal(cabFactura.getValAbonoIngresado());
+
+        //1. Cargar factura actual desde BD
+        CabFactura facturaActual =
+                cabFacturaRepository.findById(cabFactura.getIdFactura())
+                        .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
+
+        BigDecimal abonoActual = toBigDecimal(facturaActual.getAbono());
+        BigDecimal abonoManual = toBigDecimal(cabFactura.getAbono());
+
+        boolean tieneNuevoAbono = valAbonoIngresado.compareTo(BigDecimal.ZERO) > 0;
+        boolean ajustaAbonoManual = abonoManual.compareTo(abonoActual) != 0;
+
+        if (tieneNuevoAbono && ajustaAbonoManual) {
+            throw new IllegalArgumentException(
+                    "No puede ajustar el abono acumulado y registrar un nuevo abono en la misma operación.");
+        }
+
+        // 2. Actualizar campos editables
+        facturaActual.setFecha(cabFactura.getFecha());
+        if (cabFactura.getRucCliente() != null && !cabFactura.getRucCliente().trim().isEmpty()) {
+            facturaActual.setRucCliente(cabFactura.getRucCliente());
+        }
+        facturaActual.setDetalle(cabFactura.getDetalle());
+        facturaActual.setSubtotal(cabFactura.getSubtotal());
+        facturaActual.setIgv(cabFactura.getIgv());
+        facturaActual.setTotal(cabFactura.getTotal());
+
+        // 3. Recalcular saldo según total nuevo y abono actual
+        BigDecimal total = toBigDecimal(facturaActual.getTotal());
+
+        if (tieneNuevoAbono) {
+            BigDecimal nuevoAbono = abonoActual.add(valAbonoIngresado);
+            validarAbono(total, nuevoAbono);
+
+            facturaActual.setValAbonoAnterior(toMoneyString(abonoActual));
+            facturaActual.setValAbonoIngresado(toMoneyString(valAbonoIngresado));
+            facturaActual.setAbono(toMoneyString(nuevoAbono));
+            facturaActual.setSaldo(toMoneyString(total.subtract(nuevoAbono)));
+
+            Abono logAbono = traducirFacturaToAbono(facturaActual);
+
+            CabFactura facturaGuardada = cabFacturaRepository.save(facturaActual);
+            registrarAbono(logAbono);
+            auditarService.registrarMovimiento(facturaGuardada, "Factura", "Abonar factura");
+
+            return;
+        }
+
+        if (ajustaAbonoManual) {
+            validarAbono(total, abonoManual);
+
+            facturaActual.setValAbonoAnterior(toMoneyString(abonoActual));
+            facturaActual.setValAbonoIngresado("0.00");
+            facturaActual.setAbono(toMoneyString(abonoManual));
+            facturaActual.setSaldo(toMoneyString(total.subtract(abonoManual)));
+
+            CabFactura facturaGuardada = cabFacturaRepository.save(facturaActual);
+            auditarService.registrarMovimiento(facturaGuardada, "Factura", "Ajustar abono acumulado");
+
+            return;
+        }
+
+        validarAbono(total, abonoActual);
+
+        facturaActual.setValAbonoIngresado("0.00");
+        facturaActual.setSaldo(toMoneyString(total.subtract(abonoActual)));
+
+        CabFactura facturaGuardada = cabFacturaRepository.save(facturaActual);
+        auditarService.registrarMovimiento(facturaGuardada, "Factura", "Modificar factura");
+    }
+
+
     public void actualizarFactura(CabFactura cabFactura) {
         CabFactura facturaActual =
                 cabFacturaRepository.findById(cabFactura.getIdFactura())
