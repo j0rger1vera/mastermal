@@ -27,7 +27,7 @@ public class Producto {
     private String nombre;
     private Double precio;
     private Double stock;
-    @Column(columnDefinition = "TINYINT")
+    @Column(columnDefinition = "SMALLINT")
     private Byte activo;
     private LocalDate fechaCreacion;
 

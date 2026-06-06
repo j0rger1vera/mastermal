@@ -30,7 +30,7 @@ public class Cliente {
     private String correo;
     private String celular;
 
-    @Column(columnDefinition = "TINYINT")
+    @Column(columnDefinition = "SMALLINT")
     private Byte activo;
     private LocalDate fechaCreacion;
 }

@@ -16,11 +16,15 @@ public class DataInitializer {
 
     @PostConstruct
     public void init() {
+        if (usuarioRepository.existsById("admin")) {
+            return;
+        }
         Usuario usuario = new Usuario();
         usuario.setUsername("admin");
         usuario.setPassword("admin");
         usuario.setIntentosFallidos(0);
-        usuario.setBloqueado((byte) 0); // No bloqueado
+        usuario.setBloqueado((byte) 0);
+        usuario.setRol("ADMIN");
 
         usuarioRepository.save(usuario);
     }

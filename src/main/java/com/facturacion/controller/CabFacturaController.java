@@ -88,16 +88,4 @@ public class CabFacturaController {
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 
-    /*logica temporal borrar cuando este estable la app*/
-
-    @GetMapping("/sabado")
-    public ResponseEntity<List<FacturacionGeneralDTO>> obtenerFacturasBackup() {
-        return ResponseEntity.ok(cabFacturaService.obtenerFacturasSabado());
-    }
-
-    @GetMapping("/porcobrar/sabado")
-    public ResponseEntity<List<FacturacionGeneralDTO>> saldosPorCobrarSabado() {
-        List<FacturacionGeneralDTO> cabeceras = cabFacturaService.consultarSaldosPorCobrarSabado();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
-    }
 }

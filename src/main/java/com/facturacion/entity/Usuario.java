@@ -17,7 +17,7 @@ public class Usuario {
     private String username;
     private String password;
     private Integer intentosFallidos;
-    @Column(columnDefinition = "TINYINT")
+    @Column(columnDefinition = "SMALLINT")
     private Byte bloqueado;
     @Column(name = "rol")
     private String rol;
