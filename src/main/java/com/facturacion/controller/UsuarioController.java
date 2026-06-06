@@ -28,21 +28,37 @@ public class UsuarioController {
                 return ResponseEntity.ok(new ResponseMessage(HttpStatus.FORBIDDEN.value(), "Usuario bloqueado"));
             }
 
-            Optional<Object[]> usuarioAutenticado = this.usuarioService.buscarPorUsuarioYContrasenia(username, password);
-            if (usuarioAutenticado.isPresent() && usuarioAutenticado.get().length > 0) {
-                return ResponseEntity.ok(new ResponseMessage(HttpStatus.OK.value(), "Usuario autenticado exitosamente"));
-            } else {
+            Optional<Usuario> usuarioAutenticado = this.usuarioService.autenticar(username, password);
+
+            if (usuarioAutenticado.isPresent()) {
+                return ResponseEntity.ok(
+                        new ResponseMessage(
+                                HttpStatus.OK.value(),
+                                this.usuarioService.construirSesion(usuarioAutenticado.get())
+                        )
+                );
+            }else {
                 LOGGER.info("Credenciales incorrectas para el usuario: {}", username);
                 int intentosFallidos = this.usuarioService.obtenerIntentosFallidos(username).orElse(0);
                 if (intentosFallidos >= 3) {
                     LOGGER.info("Usuario bloqueado debido a múltiples intentos fallidos: {}", username);
                     this.usuarioService.bloquearUsuario(username);
-                    return ResponseEntity.ok(new ResponseMessage(HttpStatus.UNAUTHORIZED.value(), "Usuario bloqueado: superó los intentos permitidos"));
+                    return ResponseEntity.ok(
+                            new ResponseMessage(
+                                    HttpStatus.UNAUTHORIZED.value(),
+                                    "Usuario bloqueado: superó los intentos permitidos"
+                            )
+                    );
                 } else {
                     LOGGER.info("Incrementando intentos fallidos para el usuario: {}", username);
                     this.usuarioService.incrementarIntentosFallidos(username);
                 }
-                return ResponseEntity.ok(new ResponseMessage(HttpStatus.UNAUTHORIZED.value(), "Credenciales incorrectas"));
+                return ResponseEntity.ok(
+                        new ResponseMessage(
+                        HttpStatus.UNAUTHORIZED.value(),
+                        "Credenciales incorrectas"
+                        )
+                );
 
             }
         } else {

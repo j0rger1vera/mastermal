@@ -33,4 +33,9 @@ public interface UsuarioRepository extends CrudRepository<Usuario, String> {
     @Query(value = "UPDATE usuario  SET bloqueado = 1 WHERE username = :username", nativeQuery = true)
     public void bloquearUsuario(@Param("username") String username);
 
+    @Query(value = "SELECT * FROM usuario WHERE username = :username AND password = :password", nativeQuery = true)
+    Optional<Usuario> findUsuarioByUsernameAndPassword(
+            @Param("username") String username,
+            @Param("password") String password
+    );
 }

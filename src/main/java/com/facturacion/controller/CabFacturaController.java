@@ -88,24 +88,6 @@ public class CabFacturaController {
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 
-    @PutMapping("/abonar")
-    public ResponseEntity<Void> abonarAFactura(@RequestBody CabFactura cabFactura) {
-        this.cabFacturaService.abonarAFactura(cabFactura);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @PostMapping("/registrar-abono")
-    public ResponseEntity<Abono> registrarAbono(@RequestBody Abono abono) {
-        Abono abonoRegistrado = cabFacturaService.registrarAbono(abono);
-        return new ResponseEntity<>(abonoRegistrado, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/historial-abonos")
-    public ResponseEntity<List<HistorialAbonosDTO>> obtenerHistoricoAbonos() {
-        List<HistorialAbonosDTO> cabeceras = cabFacturaService.obtenerHistorialAbonos();
-        return new ResponseEntity<>(cabeceras, HttpStatus.OK);
-    }
-
     /*logica temporal borrar cuando este estable la app*/
 
     @GetMapping("/sabado")

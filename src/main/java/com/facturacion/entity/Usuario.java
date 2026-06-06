@@ -19,5 +19,6 @@ public class Usuario {
     private Integer intentosFallidos;
     @Column(columnDefinition = "TINYINT")
     private Byte bloqueado;
-
+    @Column(name = "rol")
+    private String rol;
 }
