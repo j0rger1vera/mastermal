@@ -17,12 +17,12 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     public Integer generaFactura();
 
     @Query(value =
-            "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
-                    "FROM cab_factura c " +
-                    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
-                    "WHERE c.fecha LIKE '%2026%' " +
-                    "ORDER BY c.num_factura DESC",
-            nativeQuery = true)
+    "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
+    "FROM cab_factura c " +
+    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+    "WHERE c.fecha LIKE '%2026%' " +
+    "ORDER BY c.num_factura DESC",
+    nativeQuery = true)
     List<Object[]> getBalanceGeneralRaw();
 
     default List<FacturacionGeneralDTO> getBalanceGeneral() {
@@ -70,11 +70,14 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         }).toList();
     }
 
-    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
-        "FROM cab_factura c " +
-        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente " +
-        "WHERE c.saldo = 0 " +
-        "ORDER BY c.num_factura DESC", nativeQuery = true)
+    @Query(value =
+    "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
+    "FROM cab_factura c " +
+    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+    "WHERE c.saldo > 0 " +
+    "AND c.fecha LIKE '%2026%' " +
+    "ORDER BY c.num_factura DESC",
+    nativeQuery = true)
     List<Object[]> getSaldos();
 
     default List<FacturacionGeneralDTO> getFacturasConSaldos() {
@@ -118,12 +121,15 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         }).toList();
     }
 
-    @Query(value = "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
-            "FROM cliente cl " +
-            "INNER JOIN cab_factura c ON c.ruc_cliente = cl.id_cliente " +
-            "WHERE c.saldo > 0 " +
-            "GROUP BY cl.nombre " +
-            "ORDER BY cl.nombre asc", nativeQuery = true)
+    @Query(value =
+    "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
+    "FROM cliente cl " +
+    "INNER JOIN cab_factura c ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+    "WHERE c.saldo > 0 " +
+    "AND c.fecha LIKE '%2026%' " +
+    "GROUP BY cl.nombre " +
+    "ORDER BY cl.nombre ASC",
+    nativeQuery = true)
     List<Object[]> getSaldosPorCobrarQuery();
 
     default List<FacturacionGeneralDTO> getSaldosPorCobrar() {
