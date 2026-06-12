@@ -16,9 +16,13 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     @Query(value = "SELECT COALESCE(MAX(c.num_factura), 0) + 1 as num_factura FROM cab_factura c", nativeQuery = true)
     public Integer generaFactura();
 
-    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
-            "FROM cab_factura c " +
-            "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente ORDER BY c.num_factura DESC", nativeQuery = true)
+    @Query(value =
+            "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
+                    "FROM cab_factura c " +
+                    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+                    "WHERE c.fecha LIKE '%2026%' " +
+                    "ORDER BY c.num_factura DESC",
+            nativeQuery = true)
     List<Object[]> getBalanceGeneralRaw();
 
     default List<FacturacionGeneralDTO> getBalanceGeneral() {
