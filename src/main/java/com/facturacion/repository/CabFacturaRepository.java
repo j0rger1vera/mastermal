@@ -18,7 +18,8 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
 
     @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
             "FROM cab_factura c " +
-            "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente ORDER BY c.num_factura DESC", nativeQuery = true)
+            "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " + 
+            "ORDER BY c.num_factura DESC", nativeQuery = true)
     List<Object[]> getBalanceGeneralRaw();
 
     default List<FacturacionGeneralDTO> getBalanceGeneral() {
@@ -68,7 +69,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
 
     @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
         "FROM cab_factura c " +
-        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente " +
+        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
         "WHERE c.saldo = 0 " +
         "ORDER BY c.num_factura DESC", nativeQuery = true)
     List<Object[]> getSaldos();
@@ -92,7 +93,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
 
     @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
         "FROM cab_factura c " +
-        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente " +
+        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
         "WHERE c.saldo > 0 " +
         "ORDER BY c.num_factura DESC", nativeQuery = true)
     List<Object[]> getSaldosClientes();
@@ -116,7 +117,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
 
     @Query(value = "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
             "FROM cliente cl " +
-            "INNER JOIN cab_factura c ON c.ruc_cliente = cl.id_cliente " +
+            "INNER JOIN cab_factura c ON c.ruc_cliente = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
             "WHERE c.saldo > 0 " +
             "GROUP BY cl.nombre " +
             "ORDER BY cl.nombre asc", nativeQuery = true)
