@@ -19,7 +19,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     @Query(value =
     "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
     "FROM cab_factura c " +
-    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
     "WHERE c.fecha LIKE '%2026%' " +
     "ORDER BY c.num_factura DESC",
     nativeQuery = true)
@@ -47,7 +47,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
 
     @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha, c.subtotal " +
         "FROM cab_factura c " +
-        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente " +
+        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
         "WHERE c.ruc_cliente = :nitCliente " +
         "ORDER BY c.num_factura ASC", nativeQuery = true)
     List<Object[]> getFacturaPorUnClienteQuery(String nitCliente);
@@ -73,7 +73,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     @Query(value =
     "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
     "FROM cab_factura c " +
-    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+    "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
     "WHERE c.saldo > 0 " +
     "AND c.fecha LIKE '%2026%' " +
     "ORDER BY c.num_factura DESC",
@@ -103,7 +103,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     @Query(value =
         "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha " +
         "FROM cab_factura c " +
-        "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+        "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
         "WHERE c.saldo > 0 " +
         "AND c.fecha LIKE '%2026%' " +
         "ORDER BY c.num_factura DESC",
@@ -130,7 +130,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     @Query(value =
     "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
     "FROM cliente cl " +
-    "INNER JOIN cab_factura c ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+    "INNER JOIN cab_factura c ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
     "WHERE c.saldo > 0 " +
     "AND c.fecha LIKE '%2026%' " +
     "GROUP BY cl.nombre " +
