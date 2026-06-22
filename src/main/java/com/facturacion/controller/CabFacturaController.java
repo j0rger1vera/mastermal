@@ -1,5 +1,7 @@
 package com.facturacion.controller;
 
+import com.facturacion.dto.DashboardClienteSaldoDTO;
+import com.facturacion.dto.DashboardResumenDTO;
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.dto.HistorialAbonosDTO;
@@ -88,4 +90,15 @@ public class CabFacturaController {
         return new ResponseEntity<>(cabeceras, HttpStatus.OK);
     }
 
+    @GetMapping("/dashboard/resumen")
+    public ResponseEntity<DashboardResumenDTO> obtenerDashboardResumen() {
+
+        return ResponseEntity.ok(
+                cabFacturaService.obtenerDashboardResumen());
+    }
+
+    @GetMapping("/dashboard/top-clientes-saldo")
+    public ResponseEntity<List<DashboardClienteSaldoDTO>> obtenerTopClientesSaldo() {
+        return ResponseEntity.ok(cabFacturaService.obtenerTopClientesSaldo2026());
+    }
 }

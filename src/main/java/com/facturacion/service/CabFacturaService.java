@@ -1,5 +1,7 @@
 package com.facturacion.service;
 
+import com.facturacion.dto.DashboardClienteSaldoDTO;
+import com.facturacion.dto.DashboardResumenDTO;
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -21,6 +24,7 @@ public class CabFacturaService {
     private final AuditarService auditarService;
     private final TipoDataConverter tipoDataConverter;
     private final AbonoService abonoService;
+
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
 
@@ -251,4 +255,67 @@ public class CabFacturaService {
         }
     }
 
+    public DashboardResumenDTO obtenerDashboardResumen() {
+        Object[] row = cabFacturaRepository.getDashboardResumen().get(0);
+
+        DashboardResumenDTO dto = new DashboardResumenDTO();
+            dto.setTotalFacturado(toBigDecimal(row[0]));
+        dto.setTotalAbonado(toBigDecimal(row[1]));
+        dto.setTotalSaldo(toBigDecimal(row[2]));
+        dto.setCantidadFacturas(((Number) row[3]).longValue());
+
+        return dto;
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+
+        if (value instanceof BigDecimal bigDecimal) {
+            return bigDecimal;
+        }
+
+        if (value instanceof Number number) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+
+        return new BigDecimal(value.toString());
+    }
+
+    public List<DashboardClienteSaldoDTO> obtenerTopClientesSaldo2026() {
+        List<DashboardClienteSaldoDTO> topClientes = cabFacturaRepository.getTopClientesSaldo2026()
+                .stream()
+                .map(row -> new DashboardClienteSaldoDTO(
+                        row[0] != null ? row[0].toString().toUpperCase() : "SIN NOMBRE",
+                        toBigDecimal(row[1]),
+                        toBigDecimal(row[2])
+                ))
+                .toList();
+
+        BigDecimal saldoTotal = cabFacturaRepository.getSaldoTotal2026();
+
+        BigDecimal saldoTopClientes = topClientes.stream()
+                .map(DashboardClienteSaldoDTO::getSaldo)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal saldoOtros = saldoTotal.subtract(saldoTopClientes);
+
+        if (saldoOtros.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal porcentajeOtros = saldoOtros
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(saldoTotal, 2, RoundingMode.HALF_UP);
+
+            List<DashboardClienteSaldoDTO> resultado = new ArrayList<>(topClientes);
+            resultado.add(new DashboardClienteSaldoDTO(
+                    "OTROS CLIENTES",
+                    saldoOtros,
+                    porcentajeOtros
+            ));
+
+            return resultado;
+        }
+
+        return topClientes;
+    }
 }

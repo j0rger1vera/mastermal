@@ -220,4 +220,51 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
             return dto;
         }).toList();
     }
+
+    @Query(value = """
+    SELECT
+        COALESCE(SUM(total),0),
+        COALESCE(SUM(abono),0),
+        COALESCE(SUM(saldo),0),
+        COUNT(*)
+    FROM cab_factura
+    WHERE fecha LIKE '%2026%'
+    """,
+            nativeQuery = true)
+    List<Object[]> getDashboardResumen();
+
+    @Query(value = """
+    SELECT
+        COALESCE(cl.nombre, c.ruc_cliente) AS cliente,
+        SUM(c.saldo) AS saldo,
+        ROUND(
+            (SUM(c.saldo) * 100.0) /
+            NULLIF((
+                SELECT SUM(c2.saldo)
+                FROM cab_factura c2
+                WHERE c2.fecha LIKE '%2026%'
+                  AND c2.saldo > 0
+            ), 0),
+            2
+        ) AS porcentaje
+    FROM cab_factura c
+    LEFT JOIN cliente cl
+        ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente
+        OR c.ruc_cliente = cl.ruc_dni
+    WHERE c.fecha LIKE '%2026%'
+      AND c.saldo > 0
+    GROUP BY COALESCE(cl.nombre, c.ruc_cliente)
+    ORDER BY saldo DESC
+    LIMIT 5
+    """, nativeQuery = true)
+    List<Object[]> getTopClientesSaldo2026();
+
+    @Query(value = """
+    SELECT COALESCE(SUM(saldo),0)
+    FROM cab_factura
+    WHERE fecha LIKE '%2026%'
+      AND saldo > 0
+    """,
+            nativeQuery = true)
+    BigDecimal getSaldoTotal2026();
 }
