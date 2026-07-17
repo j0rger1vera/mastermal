@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -31,15 +32,15 @@ public class Abono {
     private Integer idAbono;
 
     @Column(name = "valor_abono", columnDefinition = "DECIMAL(10,2)")
-    private String valorAbono;
+    private BigDecimal valorAbono;
 
     private String fechaAbono;
 
     @Column(name = "val_anterior", columnDefinition = "DECIMAL(10,2)")
-    private String valAnterior;
+    private BigDecimal valAnterior;
 
     @Column(name = "total_factura_original", columnDefinition = "DECIMAL(10,2)")
-    private String totalFacturaOriginal;
+    private BigDecimal totalFacturaOriginal;
 
     @Column(name = "id_factura")
     private Integer pkCabFactura;

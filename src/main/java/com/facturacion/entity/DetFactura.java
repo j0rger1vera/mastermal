@@ -24,7 +24,7 @@ public class DetFactura {
     private Integer id;
 
     @Column(name = "codigo_producto")
-    private Integer codigoProducto;
+    private String codigoProducto;
 
     @Column(name = "cantidad")
     private Integer cantidad;

@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class DetFacturaDTO {
 
     private Integer idProducto;
-    private Integer codigoProducto;
+    private String codigoProducto;
     private Integer cantidad;
     private Integer pkCabFactura;
     private BigDecimal valUnitarioProd;

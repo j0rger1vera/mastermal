@@ -47,7 +47,7 @@ public class ProductoService {
     }
 
     public String verificarSiExiteElCodProducto(String cod_producto) {
-        return this.productoRepository.verificarSiExiteElCodProducto(cod_producto);
+        return this.productoRepository.verificarSiExisteElCodigoProducto(cod_producto);
     }
     @Transactional
     public void disminuirStock(List<DetFacturaDTO> detFacturaDTOs) {

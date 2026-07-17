@@ -7,9 +7,10 @@ import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
 import com.facturacion.repository.CabFacturaRepository;
 import com.facturacion.util.TipoDataConverter;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,19 +34,19 @@ public class CabFacturaService {
         cabFactura.setFecha(LocalDateTime.now().toString().replace('T', ' ').substring(0, 19));
         cabFactura.setFechaCreacion(ahora);
 
-        BigDecimal total = tipoDataConverter.toBigDecimal(cabFactura.getTotal());
-        BigDecimal abono = tipoDataConverter.toBigDecimal(cabFactura.getAbono());
+        BigDecimal total = cabFactura.getTotal();
+        BigDecimal abono = cabFactura.getAbono();
 
         validarAbono(total, abono);
 
         BigDecimal saldo = total.subtract(abono);
 
-        cabFactura.setTotal(tipoDataConverter.toMoneyString(total));
-        cabFactura.setAbono(tipoDataConverter.toMoneyString(abono));
-        cabFactura.setSaldo(tipoDataConverter.toMoneyString(saldo));
-        cabFactura.setDetalle(StringUtils.isEmpty(cabFactura.getDetalle()) ? "" : cabFactura.getDetalle());
-        cabFactura.setValAbonoAnterior(tipoDataConverter.toMoneyString(tipoDataConverter.toBigDecimal(cabFactura.getValAbonoAnterior())));
-        cabFactura.setValAbonoIngresado(tipoDataConverter.toMoneyString(tipoDataConverter.toBigDecimal(cabFactura.getValAbonoIngresado())));
+        cabFactura.setTotal(total);
+        cabFactura.setAbono(abono);
+        cabFactura.setSaldo(saldo);
+        cabFactura.setDetalle(ObjectUtils.isEmpty(cabFactura.getDetalle()) ? "" : cabFactura.getDetalle());
+        cabFactura.setValAbonoAnterior(cabFactura.getValAbonoAnterior());
+        cabFactura.setValAbonoIngresado(cabFactura.getValAbonoIngresado());
 
         CabFactura facturaGuardada = this.cabFacturaRepository.save(cabFactura);
         auditarService.registrarMovimiento(facturaGuardada, "Factura", "Crear factura");
@@ -53,19 +54,39 @@ public class CabFacturaService {
         return facturaGuardada;
     }
 
+    @Transactional
     public void actualizarFacturaConAbonoOpcional(CabFactura cabFactura) {
-        BigDecimal valAbonoIngresado = tipoDataConverter.toBigDecimal(cabFactura.getValAbonoIngresado());
+        BigDecimal valAbonoIngresado =
+                cabFactura.getValAbonoIngresado() == null
+                        ? BigDecimal.ZERO
+                        : cabFactura.getValAbonoIngresado();
 
         //1. Cargar factura actual desde BD
         CabFactura facturaActual =
                 cabFacturaRepository.findById(cabFactura.getIdFactura())
                         .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
 
-        BigDecimal abonoActual = tipoDataConverter.toBigDecimal(facturaActual.getAbono());
-        BigDecimal abonoManual = tipoDataConverter.toBigDecimal(cabFactura.getAbono());
+        System.out.println("\n========== ACTUALIZAR FACTURA ==========");
+        System.out.println("Factura ID: " + cabFactura.getIdFactura());
+        System.out.println("Abono BD: " + facturaActual.getAbono());
+        System.out.println("Abono recibido: " + cabFactura.getAbono());
+        System.out.println("ValAbonoIngresado: " + cabFactura.getValAbonoIngresado());
+
+        BigDecimal abonoActual =
+                facturaActual.getAbono() == null
+                        ? BigDecimal.ZERO
+                        : facturaActual.getAbono();
+
+        BigDecimal abonoManual =
+                cabFactura.getAbono() == null
+                        ? abonoActual
+                        : cabFactura.getAbono();
 
         boolean tieneNuevoAbono = valAbonoIngresado.compareTo(BigDecimal.ZERO) > 0;
         boolean ajustaAbonoManual = abonoManual.compareTo(abonoActual) != 0;
+
+        System.out.println("tieneNuevoAbono = " + tieneNuevoAbono);
+        System.out.println("ajustaAbonoManual = " + ajustaAbonoManual);
 
         if (tieneNuevoAbono && ajustaAbonoManual) {
             throw new IllegalArgumentException(
@@ -83,20 +104,28 @@ public class CabFacturaService {
         facturaActual.setTotal(cabFactura.getTotal());
 
         // 3. Recalcular saldo según total nuevo y abono actual
-        BigDecimal total = tipoDataConverter.toBigDecimal(facturaActual.getTotal());
+        BigDecimal total = facturaActual.getTotal();
 
         if (tieneNuevoAbono) {
+            System.out.println(">>> ENTRO AL BLOQUE: NUEVO ABONO");
             BigDecimal nuevoAbono = abonoActual.add(valAbonoIngresado);
             validarAbono(total, nuevoAbono);
 
-            facturaActual.setValAbonoAnterior(tipoDataConverter.toMoneyString(abonoActual));
-            facturaActual.setValAbonoIngresado(tipoDataConverter.toMoneyString(valAbonoIngresado));
-            facturaActual.setAbono(tipoDataConverter.toMoneyString(nuevoAbono));
-            facturaActual.setSaldo(tipoDataConverter.toMoneyString(total.subtract(nuevoAbono)));
+            facturaActual.setValAbonoAnterior(abonoActual);
+            facturaActual.setValAbonoIngresado(valAbonoIngresado);
+            facturaActual.setAbono(nuevoAbono);
+            facturaActual.setSaldo(total.subtract(nuevoAbono));
 
             Abono logAbono = tipoDataConverter.traducirFacturaToAbono(facturaActual);
 
             CabFactura facturaGuardada = cabFacturaRepository.save(facturaActual);
+
+            System.out.println("Abono a registrar:");
+            System.out.println("ID Abono: " + logAbono.getIdAbono());
+            System.out.println("Factura: " + logAbono.getPkCabFactura());
+            System.out.println("Valor: " + logAbono.getValorAbono());
+            System.out.println("Fecha: " + logAbono.getFechaAbono());
+
             abonoService.registrarAbono(logAbono);
             auditarService.registrarMovimiento(facturaGuardada, "Factura", "Abonar factura");
 
@@ -104,12 +133,13 @@ public class CabFacturaService {
         }
 
         if (ajustaAbonoManual) {
+            System.out.println(">>> ENTRO AL BLOQUE: AJUSTE MANUAL");
             validarAbono(total, abonoManual);
 
-            facturaActual.setValAbonoAnterior(tipoDataConverter.toMoneyString(abonoActual));
-            facturaActual.setValAbonoIngresado("0.00");
-            facturaActual.setAbono(tipoDataConverter.toMoneyString(abonoManual));
-            facturaActual.setSaldo(tipoDataConverter.toMoneyString(total.subtract(abonoManual)));
+            facturaActual.setValAbonoAnterior(abonoActual);
+            facturaActual.setValAbonoIngresado(new BigDecimal(0));
+            facturaActual.setAbono(abonoManual);
+            facturaActual.setSaldo(total.subtract(abonoManual));
 
             CabFactura facturaGuardada = cabFacturaRepository.save(facturaActual);
             auditarService.registrarMovimiento(facturaGuardada, "Factura", "Ajustar abono acumulado");
@@ -117,10 +147,12 @@ public class CabFacturaService {
             return;
         }
 
+        System.out.println(">>> ENTRO AL BLOQUE: MODIFICAR FACTURA");
+
         validarAbono(total, abonoActual);
 
-        facturaActual.setValAbonoIngresado("0.00");
-        facturaActual.setSaldo(tipoDataConverter.toMoneyString(total.subtract(abonoActual)));
+        facturaActual.setValAbonoIngresado(new BigDecimal(0));
+        facturaActual.setSaldo(total.subtract(abonoActual));
 
         CabFactura facturaGuardada = cabFacturaRepository.save(facturaActual);
         auditarService.registrarMovimiento(facturaGuardada, "Factura", "Modificar factura");
@@ -132,28 +164,26 @@ public class CabFacturaService {
                 cabFacturaRepository.findById(cabFactura.getIdFactura())
                         .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
 
-        BigDecimal total = tipoDataConverter.toBigDecimal(
-                StringUtils.isEmpty(cabFactura.getTotal())
+        BigDecimal total = 
+                ObjectUtils.isEmpty(cabFactura.getTotal())
                         ? facturaActual.getTotal()
-                        : cabFactura.getTotal()
-        );
+                        : cabFactura.getTotal();
 
-        BigDecimal abono = tipoDataConverter.toBigDecimal(
-                StringUtils.isEmpty(cabFactura.getAbono())
+        BigDecimal abono = 
+                ObjectUtils.isEmpty(cabFactura.getAbono())
                         ? facturaActual.getAbono()
-                        : cabFactura.getAbono()
-        );
+                        : cabFactura.getAbono();
 
         validarAbono(total, abono);
 
         BigDecimal saldo = total.subtract(abono);
 
-        facturaActual.setTotal(tipoDataConverter.toMoneyString(total));
-        facturaActual.setAbono(tipoDataConverter.toMoneyString(abono));
-        facturaActual.setSaldo(tipoDataConverter.toMoneyString(saldo));
+        facturaActual.setTotal(total);
+        facturaActual.setAbono(abono);
+        facturaActual.setSaldo(saldo);
 
         facturaActual.setDetalle(
-                StringUtils.isEmpty(cabFactura.getDetalle())
+                ObjectUtils.isEmpty(cabFactura.getDetalle())
                         ? facturaActual.getDetalle()
                         : cabFactura.getDetalle()
         );
@@ -162,13 +192,6 @@ public class CabFacturaService {
 
         CabFactura facturaGuardada = this.cabFacturaRepository.save(facturaActual);
         auditarService.registrarMovimiento(facturaGuardada, "Factura", "Modificar factura");
-    }
-
-    public List<CabFactura> obtenerTodas( ) {
-        Iterable<CabFactura> cabFacturas = this.cabFacturaRepository.findAll();
-        List<CabFactura> listaCabFacturas = new ArrayList<>();
-        cabFacturas.forEach(listaCabFacturas::add);
-        return listaCabFacturas;
     }
 
     public Optional<CabFactura> obtenerPorId(Integer id) {
@@ -227,8 +250,7 @@ public class CabFacturaService {
     }
 
     public List<FacturacionGeneralDTO> consultarSaldosPorCobrar( ) {
-        List<FacturacionGeneralDTO> listaFacturacion = this.cabFacturaRepository.getSaldosPorCobrar();
-        return listaFacturacion;
+        return this.cabFacturaRepository.getSaldosPorCobrar();
     }
 
     /*logica temporal borrar cuando este estable la app*/

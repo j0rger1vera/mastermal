@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -25,8 +26,9 @@ public class Producto {
     @Column(length = 15, unique = true)
     private String codigo;
     private String nombre;
-    private Double precio;
-    private Double stock;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal precio;
+    private Integer stock;
     @Column(columnDefinition = "SMALLINT")
     private Byte activo;
     private LocalDate fechaCreacion;

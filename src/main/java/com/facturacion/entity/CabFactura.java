@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,23 +36,26 @@ public class CabFactura {
     @Column(name = "nombre")
     private String detalle;
 
-    @Column(name = "subtotal", columnDefinition = "DECIMAL(10,2)")
-    private String subtotal;
-    @Column(name = "igv", columnDefinition = "DECIMAL(10,2)")
-    private String igv;
-    @Column(name = "total", columnDefinition = "DECIMAL(10,2)")
-    private String total;
-    @Column(name = "abono", columnDefinition = "DECIMAL(10,2)")
-    private String abono;
-    @Column(name = "saldo", columnDefinition = "DECIMAL(10,2)")
-    private String saldo;
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    private BigDecimal subtotal;
+    @Column(name = "igv", precision = 10, scale = 2)
+    private BigDecimal igv;
+    @Column(name = "total", precision = 10, scale = 2)
+    private BigDecimal total;
+    @Column(name = "abono", precision = 10, scale = 2)
+    private BigDecimal abono;
+    @Column(name = "saldo", precision = 10, scale = 2)
+    private BigDecimal saldo;
 
 
     @JsonManagedReference
     @OneToMany(mappedBy = "pkCabFactura", cascade = CascadeType.ALL)
     private List<DetFactura> detFactura;
 
-    private String valAbonoIngresado;
-    private String valAbonoAnterior;
+    @Column(name = "val_abono_ingresado", precision = 10, scale = 2)
+    private BigDecimal valAbonoIngresado;
+
+    @Column(name = "val_abono_anterior", precision = 10, scale = 2)
+    private BigDecimal valAbonoAnterior;
 
 }

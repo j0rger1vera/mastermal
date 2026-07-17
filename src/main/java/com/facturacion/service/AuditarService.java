@@ -36,7 +36,14 @@ public class AuditarService {
     }
 
   public Auditoria registrarMovimiento(Object movimiento, String funcion, String operacion) {
-    return this.auditoriaRepository.save(armarValores(movimiento, funcion, operacion));
+
+      Auditoria auditoria =
+              armarValores(movimiento, funcion, operacion);
+
+      Auditoria resultado =
+              auditoriaRepository.save(auditoria);
+
+      return resultado;
   }
 
   public Auditoria armarValores(Object datos, String funcion, String operacion) {

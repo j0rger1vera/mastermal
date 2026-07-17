@@ -23,7 +23,7 @@ public class AbonoService {
     private final TipoDataConverter tipoDataConverter;
 
     public void abonarAFactura(CabFactura cabFactura) {
-        BigDecimal valAbonoIngresado = tipoDataConverter.toBigDecimal(cabFactura.getValAbonoIngresado());
+        BigDecimal valAbonoIngresado = cabFactura.getValAbonoIngresado();
 
         if (valAbonoIngresado.compareTo(BigDecimal.ZERO) <= 0) {
             return;
@@ -33,8 +33,8 @@ public class AbonoService {
                 cabFacturaRepository.findById(cabFactura.getIdFactura())
                         .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
 
-        BigDecimal total = tipoDataConverter.toBigDecimal(facturaActual.getTotal());
-        BigDecimal abonoActual = tipoDataConverter.toBigDecimal(facturaActual.getAbono());
+        BigDecimal total = facturaActual.getTotal();
+        BigDecimal abonoActual = facturaActual.getAbono();
 
         BigDecimal nuevoAbono = abonoActual.add(valAbonoIngresado);
 
@@ -42,10 +42,10 @@ public class AbonoService {
 
         BigDecimal nuevoSaldo = total.subtract(nuevoAbono);
 
-        facturaActual.setValAbonoAnterior(tipoDataConverter.toMoneyString(abonoActual));
-        facturaActual.setValAbonoIngresado(tipoDataConverter.toMoneyString(valAbonoIngresado));
-        facturaActual.setAbono(tipoDataConverter.toMoneyString(nuevoAbono));
-        facturaActual.setSaldo(tipoDataConverter.toMoneyString(nuevoSaldo));
+        facturaActual.setValAbonoAnterior(abonoActual);
+        facturaActual.setValAbonoIngresado(valAbonoIngresado);
+        facturaActual.setAbono(nuevoAbono);
+        facturaActual.setSaldo(nuevoSaldo);
         facturaActual.setRucCliente(Objects.nonNull(cabFactura.getRucCliente()) ? cabFactura.getRucCliente() : facturaActual.getRucCliente());
 
         Abono logAbono = tipoDataConverter.traducirFacturaToAbono(facturaActual);
@@ -71,7 +71,15 @@ public class AbonoService {
     }
 
     public Abono registrarAbono(Abono abono) {
+
+        System.out.println("===== REGISTRAR ABONO =====");
+        System.out.println("ID recibido: " + abono.getIdAbono());
+        System.out.println("Factura: " + abono.getPkCabFactura());
+        System.out.println("Valor: " + abono.getValorAbono());
+
         Abono abonoCreado = this.abonoRepository.save(abono);
+
+        System.out.println("ID generado: " + abonoCreado.getIdAbono());
         auditarService.registrarMovimiento(abonoCreado, "Abonos", "Agregar abono");
         return abonoCreado;
     }

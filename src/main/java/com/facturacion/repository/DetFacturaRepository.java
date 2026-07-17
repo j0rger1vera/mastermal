@@ -20,7 +20,7 @@ public interface DetFacturaRepository extends CrudRepository<DetFactura, Integer
     @Transactional
     @Query(value = "INSERT INTO det_factura (codigo_producto, cantidad, pk_cab_factura, valor_unitario, valor_total) VALUES (?1, ?2, ?3, ?4, ?5)", nativeQuery = true)
     void insertarFactura(
-        Integer codigoProducto, Integer cantidad, Integer pkCabFactura, BigDecimal valUnitario, BigDecimal valTotal);
+        String codigoProducto, Integer cantidad, Integer pkCabFactura, BigDecimal valUnitario, BigDecimal valTotal);
 
 
     @Query(value = "SELECT d.id, d.cantidad, d.codigo_producto, d.pk_cab_factura, d.valor_unitario, d.valor_total, p.nombre "
@@ -36,7 +36,7 @@ public interface DetFacturaRepository extends CrudRepository<DetFactura, Integer
           DetFacturaDTO dto = new DetFacturaDTO();
           dto.setIdProducto((Integer) record[0]);
           dto.setCantidad((Integer) record[1]);
-          dto.setCodigoProducto((Integer) record[2]);
+          dto.setCodigoProducto((String) record[2]);
           dto.setPkCabFactura((Integer) record[3]);
           dto.setValUnitarioProd((BigDecimal) record[4]);
           dto.setValTotalProd((BigDecimal) record[5]);

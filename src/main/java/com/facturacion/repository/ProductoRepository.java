@@ -2,6 +2,7 @@ package com.facturacion.repository;
 
 import com.facturacion.entity.Cliente;
 import com.facturacion.entity.Producto;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,12 +13,20 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductoRepository extends CrudRepository<Producto, Integer> {
 
-    @Query(value = "SELECT codigo as cod_producto FROM producto where codigo = :cod_producto", nativeQuery = true)
-    public String verificarSiExiteElCodProducto(@Param("cod_producto") String cod_producto);
+    @Query(value = "SELECT codigo FROM producto where codigo = :codigo",
+            nativeQuery = true
+    )
+    String verificarSiExisteElCodigoProducto(
+            @Param("codigo") String codigo
+    );
 
     @Modifying
-    @Query(value = "UPDATE producto SET stock = stock - :cantidad WHERE codigo = :id_producto", nativeQuery = true)
-    public Integer disminuirStock(@Param("id_producto") Integer id_producto, @Param("cantidad") Integer cantidad);
+    @Transactional
+    @Query(value = "UPDATE producto SET stock = stock - :cantidad WHERE codigo = :codigo", nativeQuery = true)
+    int disminuirStock(
+            @Param("codigo") String codigo,
+            @Param("cantidad") Integer cantidad
+    );
 
 
 
