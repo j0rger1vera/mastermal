@@ -6,6 +6,7 @@ import com.facturacion.entity.CabFactura;
 import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
 import com.facturacion.util.TipoDataConverter;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,19 +23,37 @@ public class AbonoService {
     private final AuditarService auditarService;
     private final TipoDataConverter tipoDataConverter;
 
+    @Transactional
     public void abonarAFactura(CabFactura cabFactura) {
+
+        if (cabFactura == null
+                || cabFactura.getIdFactura() == null) {
+            throw new IllegalArgumentException(
+                    "Debe indicar la factura a abonar");
+        }
+
         BigDecimal valAbonoIngresado = cabFactura.getValAbonoIngresado();
 
-        if (valAbonoIngresado.compareTo(BigDecimal.ZERO) <= 0) {
-            return;
+        if (valAbonoIngresado == null
+                || valAbonoIngresado.compareTo(
+                BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "El valor del abono debe ser mayor que cero");
         }
 
         CabFactura facturaActual =
                 cabFacturaRepository.findById(cabFactura.getIdFactura())
                         .orElseThrow(() -> new IllegalArgumentException("Factura no encontrada"));
 
-        BigDecimal total = facturaActual.getTotal();
-        BigDecimal abonoActual = facturaActual.getAbono();
+        BigDecimal total =
+                facturaActual.getTotal() != null
+                        ? facturaActual.getTotal()
+                        : BigDecimal.ZERO;
+
+        BigDecimal abonoActual =
+                facturaActual.getAbono() != null
+                        ? facturaActual.getAbono()
+                        : BigDecimal.ZERO;
 
         BigDecimal nuevoAbono = abonoActual.add(valAbonoIngresado);
 
@@ -45,12 +64,16 @@ public class AbonoService {
         facturaActual.setValAbonoAnterior(abonoActual);
         facturaActual.setValAbonoIngresado(valAbonoIngresado);
         facturaActual.setAbono(nuevoAbono);
-        facturaActual.setSaldo(nuevoSaldo);
-        facturaActual.setRucCliente(Objects.nonNull(cabFactura.getRucCliente()) ? cabFactura.getRucCliente() : facturaActual.getRucCliente());
+        facturaActual.setSaldo(total.subtract(nuevoAbono));
+        if (cabFactura.getRucCliente() != null) {
+            facturaActual.setRucCliente(
+                    cabFactura.getRucCliente());
+        }
+
+        CabFactura facturaGuardada = this.cabFacturaRepository.save(facturaActual);
 
         Abono logAbono = tipoDataConverter.traducirFacturaToAbono(facturaActual);
 
-        CabFactura facturaGuardada = this.cabFacturaRepository.save(facturaActual);
         registrarAbono(logAbono);
 
         auditarService.registrarMovimiento(facturaGuardada, "Factura", "Abonar factura");

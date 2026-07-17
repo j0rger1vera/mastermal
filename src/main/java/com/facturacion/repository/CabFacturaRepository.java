@@ -45,20 +45,26 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     }
 
 
-    @Query(value = "SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha, c.subtotal " +
-        "FROM cab_factura c " +
-        "INNER JOIN cliente cl ON c.ruc_cliente = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
-        "WHERE c.ruc_cliente = :nitCliente " +
-        "ORDER BY c.num_factura ASC", nativeQuery = true)
+    @Query(value = """
+    SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono,
+        c.nombre, c.total, c.num_factura, c.fecha, c.subtotal
+    FROM cab_factura c
+    INNER JOIN cliente cl
+        ON c.ruc_cliente = CAST(cl.id_cliente AS VARCHAR)
+        OR c.ruc_cliente = cl.ruc_dni
+    WHERE c.ruc_cliente = :nitCliente
+    ORDER BY c.num_factura ASC
+    """,
+            nativeQuery = true)
     List<Object[]> getFacturaPorUnClienteQuery(String nitCliente);
 
     default List<FacturacionGeneralDTO> getFacturaPorUnCliente(String nitCliente) {
-        List<Object[]> results = getFacturaPorUnClienteQuery(nitCliente.toString());
+        List<Object[]> results = getFacturaPorUnClienteQuery(nitCliente);
         return results.stream().map(record -> {
             FacturacionGeneralDTO dto = new FacturacionGeneralDTO();
             dto.setIdFactura((Integer) record[0]);
             dto.setRucCliente((String) record[1]);
-            dto.setNombreCliente((String) record[2].toString().toLowerCase());
+            dto.setNombreCliente(record[2].toString().toLowerCase());
             dto.setSaldo((BigDecimal) record[3]);
             dto.setAbono((BigDecimal) record[4]);
             dto.setDetalle((String) record[5]);
