@@ -207,7 +207,7 @@ public class CabFacturaService {
     }
 
     public List<FacturacionGeneralDTO> obtenerBalanceGeneral( ) {
-        List<FacturacionGeneralDTO> listaFacturacion = this.cabFacturaRepository.getBalanceGeneral();
+        List<FacturacionGeneralDTO> listaFacturacion = this.cabFacturaRepository.getFacturasConSaldos();
 
         Map<String, FacturacionGeneralDTO> agrupados = new HashMap<>();
 
