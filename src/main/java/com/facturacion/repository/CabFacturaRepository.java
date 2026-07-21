@@ -134,14 +134,14 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     }
 
     @Query(value =
-    "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
-    "FROM cliente cl " +
-    "INNER JOIN cab_factura c ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
-    "WHERE c.saldo > 0 " +
-    "AND c.fecha LIKE '%2025%' or c.fecha LIKE '%2026%' " +
-    "GROUP BY cl.nombre " +
-    "ORDER BY cl.nombre ASC",
-    nativeQuery = true)
+            "SELECT cl.nombre, SUM(c.saldo), SUM(c.abono), SUM(c.total) " +
+                    "FROM cliente cl " +
+                    "INNER JOIN cab_factura c ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente " +
+                    "OR c.ruc_cliente = cl.ruc_dni " +
+                    "WHERE c.saldo > 0 " +
+                    "GROUP BY cl.nombre " +
+                    "ORDER BY cl.nombre ASC",
+            nativeQuery = true)
     List<Object[]> getSaldosPorCobrarQuery();
 
     default List<FacturacionGeneralDTO> getSaldosPorCobrar() {
