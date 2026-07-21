@@ -234,7 +234,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         COALESCE(SUM(saldo),0),
         COUNT(*)
     FROM cab_factura
-    WHERE c.fecha LIKE '%2025%' or fecha LIKE '%2026%'
+    WHERE fecha LIKE '%2025%' or fecha LIKE '%2026%'
     """,
             nativeQuery = true)
     List<Object[]> getDashboardResumen();
