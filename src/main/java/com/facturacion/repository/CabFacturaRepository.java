@@ -111,7 +111,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         "FROM cab_factura c " +
         "INNER JOIN cliente cl ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
         "WHERE c.saldo > 0 " +
-        "AND c.fecha LIKE '%2026%' " +
+        "AND c.fecha LIKE '%2025%' or c.fecha LIKE '%2026%' " +
         "ORDER BY c.num_factura DESC",
         nativeQuery = true)
     List<Object[]> getSaldosClientes();
@@ -138,7 +138,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     "FROM cliente cl " +
     "INNER JOIN cab_factura c ON CAST(c.ruc_cliente AS INTEGER) = cl.id_cliente OR c.ruc_cliente = cl.ruc_dni " +
     "WHERE c.saldo > 0 " +
-    "AND c.fecha LIKE '%2026%' " +
+    "AND c.fecha LIKE '%2025%' or c.fecha LIKE '%2026%' " +
     "GROUP BY cl.nombre " +
     "ORDER BY cl.nombre ASC",
     nativeQuery = true)
@@ -234,7 +234,7 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
         COALESCE(SUM(saldo),0),
         COUNT(*)
     FROM cab_factura
-    WHERE fecha LIKE '%2026%'
+    WHERE c.fecha LIKE '%2025%' or fecha LIKE '%2026%'
     """,
             nativeQuery = true)
     List<Object[]> getDashboardResumen();
