@@ -19,8 +19,10 @@ public interface AbonoRepository extends CrudRepository<Abono, Integer> {
 
     @Query(value = "SELECT a.id_abono, f.num_factura, a.valor_abono, a.fecha_abono, a.val_anterior, a.total_factura_original, c.nombre " +
         "FROM abonos a " +
-        "INNER JOIN cab_factura f ON f.id_factura = a.id_factura " +
-        "INNER JOIN cliente c ON c.id_cliente = f.ruc_cliente " +
+        "INNER JOIN cab_factura f " +
+            "ON f.id_factura = a.id_factura " +
+        "INNER JOIN cliente c " +
+            "ON CAST(c.id_cliente AS VARCHAR) = f.ruc_cliente " +
         "ORDER BY f.num_factura DESC", nativeQuery = true)
     List<Object[]> getHistoricoAbonos();
 
