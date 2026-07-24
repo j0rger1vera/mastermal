@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -33,7 +34,7 @@ public class CabFacturaService {
     private final TipoDataConverter tipoDataConverter;
     private final AbonoService abonoService;
     private final AbonoRepository abonoRepository;
-
+    private static final ZoneId APPLICATION_ZONE = ZoneId.of("America/Bogota");
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
 
@@ -52,12 +53,14 @@ public class CabFacturaService {
 
         log.info("UTC: {}",
                 ZonedDateTime.now(ZoneOffset.UTC));
-
+        log.info("Hora aplicación: {}", LocalDateTime.now(APPLICATION_ZONE));
         log.info("======================================");
 
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = LocalDateTime.now(APPLICATION_ZONE);
 
-        cabFactura.setFecha(LocalDateTime.now().toString().replace('T', ' ').substring(0, 19));
+        cabFactura.setFecha(
+                ahora.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
         cabFactura.setFechaCreacion(ahora);
 
         BigDecimal total = cabFactura.getTotal();
