@@ -101,4 +101,12 @@ public class CabFacturaController {
     public ResponseEntity<List<DashboardClienteSaldoDTO>> obtenerTopClientesSaldo() {
         return ResponseEntity.ok(cabFacturaService.obtenerTopClientesSaldo2026());
     }
+
+    @DeleteMapping("/abono/{idAbono}")
+    public ResponseEntity<Void> reversarAbono(
+            @PathVariable Integer idAbono
+    ) {
+        cabFacturaService.reversarAbono(idAbono);
+        return ResponseEntity.noContent().build();
+    }
 }

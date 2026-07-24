@@ -5,18 +5,25 @@ import com.facturacion.dto.DashboardResumenDTO;
 import com.facturacion.dto.FacturacionGeneralDTO;
 import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
+import com.facturacion.repository.AbonoRepository;
 import com.facturacion.repository.CabFacturaRepository;
 import com.facturacion.util.TipoDataConverter;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class CabFacturaService {
@@ -25,9 +32,28 @@ public class CabFacturaService {
     private final AuditarService auditarService;
     private final TipoDataConverter tipoDataConverter;
     private final AbonoService abonoService;
+    private final AbonoRepository abonoRepository;
 
 
     public CabFactura guardarCabFactura(CabFactura cabFactura) {
+
+        log.info("======================================");
+        log.info("ZoneId.systemDefault(): {}", ZoneId.systemDefault());
+
+        log.info("LocalDateTime.now(): {}", LocalDateTime.now());
+
+        log.info("Instant.now(): {}", Instant.now());
+
+        log.info("Bogota: {}",
+                ZonedDateTime.now(ZoneId.of("America/Bogota")));
+
+        log.info("Montevideo: {}",
+                ZonedDateTime.now(ZoneId.of("America/Montevideo")));
+
+        log.info("UTC: {}",
+                ZonedDateTime.now(ZoneOffset.UTC));
+
+        log.info("======================================");
 
         LocalDateTime ahora = LocalDateTime.now();
 
@@ -339,5 +365,62 @@ public class CabFacturaService {
         }
 
         return topClientes;
+    }
+
+
+    @Transactional
+    public void reversarAbono(Integer idAbono) {
+        Abono abono = abonoRepository.findById(idAbono)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró el abono con id: " + idAbono
+                        )
+                );
+
+        Integer idFactura = abono.getPkCabFactura();
+
+        CabFactura factura = cabFacturaRepository.findById(idFactura)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró la factura asociada al abono: " + idAbono
+                        )
+                );
+
+        BigDecimal valorAbonoReversar = valorSeguro(abono.getValorAbono());
+        BigDecimal abonoActual = valorSeguro(factura.getAbono());
+        BigDecimal totalFactura = valorSeguro(factura.getTotal());
+
+        if (valorAbonoReversar.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalStateException(
+                    "El valor del abono a reversar debe ser mayor que cero"
+            );
+        }
+
+        if (valorAbonoReversar.compareTo(abonoActual) > 0) {
+            throw new IllegalStateException(
+                    "El valor del abono a reversar supera el abono acumulado de la factura"
+            );
+        }
+
+        BigDecimal nuevoAbono = abonoActual.subtract(valorAbonoReversar);
+        BigDecimal nuevoSaldo = totalFactura.subtract(nuevoAbono);
+
+        factura.setAbono(nuevoAbono);
+        factura.setSaldo(nuevoSaldo);
+        factura.setValAbonoIngresado(BigDecimal.ZERO);
+
+        cabFacturaRepository.save(factura);
+        abonoRepository.delete(abono);
+
+        auditarService.registrarMovimiento(
+                abono,
+                "Reversar abono",
+                "Factura: " + factura.getIdFactura()
+                        + ", abono reversado: " + valorAbonoReversar
+        );
+    }
+
+    private BigDecimal valorSeguro(BigDecimal valor) {
+        return valor != null ? valor : BigDecimal.ZERO;
     }
 }

@@ -46,13 +46,13 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
 
 
     @Query(value = """
-    SELECT c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono,
-        c.nombre, c.total, c.num_factura, c.fecha, c.subtotal
+    SELECT
+        c.id_factura, c.ruc_cliente, cl.nombre, c.saldo, c.abono, c.nombre, c.total, c.num_factura, c.fecha, c.subtotal
     FROM cab_factura c
     INNER JOIN cliente cl
         ON c.ruc_cliente = CAST(cl.id_cliente AS VARCHAR)
-        OR c.ruc_cliente = cl.ruc_dni
     WHERE c.ruc_cliente = :nitCliente
+      AND c.saldo > 0
     ORDER BY c.num_factura ASC
     """,
             nativeQuery = true)
