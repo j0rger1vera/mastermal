@@ -1,5 +1,6 @@
 package com.facturacion.controller;
 
+import com.facturacion.dto.DispersarAbonoRequest;
 import com.facturacion.dto.HistorialAbonosDTO;
 import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
@@ -40,5 +41,14 @@ public class AbonoController {
     @GetMapping("/historial")
     public ResponseEntity<List<HistorialAbonosDTO>> obtenerHistoricoAbonos() {
         return ResponseEntity.ok(abonoService.obtenerHistorialAbonos());
+    }
+
+    @PostMapping("/dispersar")
+    public ResponseEntity<Void> dispersarAbono(
+            @RequestBody DispersarAbonoRequest request) {
+
+        abonoService.dispersarAbono(request);
+
+        return ResponseEntity.ok().build();
     }
 }

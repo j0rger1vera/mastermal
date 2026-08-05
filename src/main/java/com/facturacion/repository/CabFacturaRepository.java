@@ -5,6 +5,7 @@ import com.facturacion.dto.DetFacturaDTO;
 import com.facturacion.entity.CabFactura;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -272,4 +273,17 @@ public interface CabFacturaRepository extends CrudRepository<CabFactura, Integer
     """,
             nativeQuery = true)
     BigDecimal getSaldoTotal2026();
+
+    @Query(value = """
+    SELECT c.*
+    FROM cab_factura c
+    WHERE c.ruc_cliente = :clienteId
+      AND c.saldo > 0
+    ORDER BY c.num_factura ASC
+    FOR UPDATE
+    """,
+            nativeQuery = true)
+    List<CabFactura> buscarFacturasPendientesParaAbono(
+            @Param("clienteId") String clienteId);
+
 }

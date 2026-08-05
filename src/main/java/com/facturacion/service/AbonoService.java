@@ -1,5 +1,6 @@
 package com.facturacion.service;
 
+import com.facturacion.dto.DispersarAbonoRequest;
 import com.facturacion.dto.HistorialAbonosDTO;
 import com.facturacion.entity.Abono;
 import com.facturacion.entity.CabFactura;
@@ -109,5 +110,131 @@ public class AbonoService {
 
     public List<HistorialAbonosDTO> obtenerHistorialAbonos( ) {
         return this.abonoRepository.getAbonos();
+    }
+
+    @Transactional
+    public void dispersarAbono(DispersarAbonoRequest request) {
+
+        validarSolicitudDispersion(request);
+
+        List<CabFactura> facturasPendientes =
+                cabFacturaRepository.buscarFacturasPendientesParaAbono(
+                        request.getClienteId());
+
+        if (facturasPendientes.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "El cliente no tiene facturas con saldo pendiente");
+        }
+
+        BigDecimal saldoTotalCliente = facturasPendientes.stream()
+                .map(CabFactura::getSaldo)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (request.getValorAbono().compareTo(saldoTotalCliente) > 0) {
+            throw new IllegalArgumentException(
+                    "El valor del abono supera el saldo pendiente del cliente");
+        }
+
+        BigDecimal abonoRestante = request.getValorAbono();
+
+        for (CabFactura factura : facturasPendientes) {
+
+            if (abonoRestante.compareTo(BigDecimal.ZERO) <= 0) {
+                break;
+            }
+
+            BigDecimal saldoFactura = valorSeguro(factura.getSaldo());
+
+            if (saldoFactura.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+
+            BigDecimal valorAplicar =
+                    abonoRestante.min(saldoFactura);
+
+            aplicarAbonoAFactura(
+                    factura,
+                    valorAplicar);
+
+            abonoRestante =
+                    abonoRestante.subtract(valorAplicar);
+        }
+
+        if (abonoRestante.compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalStateException(
+                    "No fue posible distribuir completamente el abono. " +
+                            "Valor pendiente de aplicar: " + abonoRestante);
+        }
+    }
+
+    private void validarSolicitudDispersion(
+            DispersarAbonoRequest request) {
+
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "La solicitud de abono es obligatoria");
+        }
+
+        if (request.getClienteId() == null
+                || request.getClienteId().trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Debe indicar el cliente");
+        }
+
+        if (request.getValorAbono() == null) {
+            throw new IllegalArgumentException(
+                    "Debe indicar el valor del abono");
+        }
+
+        if (request.getValorAbono()
+                .compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "El valor del abono debe ser mayor que cero");
+        }
+    }
+
+    private void aplicarAbonoAFactura(
+            CabFactura factura,
+            BigDecimal valorAbono) {
+
+        BigDecimal totalFactura =
+                valorSeguro(factura.getTotal());
+
+        BigDecimal abonoActual =
+                valorSeguro(factura.getAbono());
+
+        BigDecimal nuevoAbono =
+                abonoActual.add(valorAbono);
+
+        validarAbono(totalFactura, nuevoAbono);
+
+        BigDecimal nuevoSaldo =
+                totalFactura.subtract(nuevoAbono);
+
+        factura.setValAbonoAnterior(abonoActual);
+        factura.setValAbonoIngresado(valorAbono);
+        factura.setAbono(nuevoAbono);
+        factura.setSaldo(nuevoSaldo);
+
+        CabFactura facturaGuardada =
+                cabFacturaRepository.save(factura);
+
+        Abono movimientoAbono =
+                tipoDataConverter.traducirFacturaToAbono(
+                        facturaGuardada);
+
+        registrarAbono(movimientoAbono);
+
+        auditarService.registrarMovimiento(
+                facturaGuardada,
+                "Factura",
+                "Abonar factura");
+    }
+
+    private BigDecimal valorSeguro(BigDecimal valor) {
+        return valor != null
+                ? valor
+                : BigDecimal.ZERO;
     }
 }
